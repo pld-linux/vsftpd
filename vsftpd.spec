@@ -16,9 +16,12 @@ Source2:	%{name}.pamd
 Source3:	%{name}-ftpusers
 Source4:	ftpusers.tar.bz2
 # Source4-md5:	76c80b6ec9f4d079a1e27316edddbe16
+Patch0:		%{name}-builddefs.patch
 URL:		http://vsftpd.beasts.org/
 PreReq:		rc-inetd
 BuildRequires:	libcap-devel
+BuildRequires:	libwrap-devel
+BuildRequires:	openssl-devel >= 0.9.7d
 Requires:	FHS >= 2.3
 Requires:	pam >= 0.77.3
 Provides:	ftpserver
@@ -54,6 +57,7 @@ Man Security Audit Team" Evans.
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 %{__make} \
