@@ -36,6 +36,8 @@ Obsoletes:	wu-ftpd
 Conflicts:	man-pages < 1.51
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
+%define	_ftpdir	/srv/ftp
+
 %description
 A Very Secure FTP Daemon - written from scratch - by Chris "One Man
 Security Audit Team" Evans.
@@ -61,7 +63,7 @@ Man Security Audit Team" Evans.
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_sbindir},%{_datadir}/empty,%{_mandir}/man{5,8}} \
 	$RPM_BUILD_ROOT/etc/{pam.d,sysconfig/rc-inetd,logrotate.d,ftpd} \
-	$RPM_BUILD_ROOT{/srv/ftp/pub/incoming,/var/log}
+	$RPM_BUILD_ROOT{%{_ftpdir}/pub/incoming,/var/log}
 
 install vsftpd $RPM_BUILD_ROOT%{_sbindir}/vsftpd
 install vsftpd.conf $RPM_BUILD_ROOT%{_sysconfdir}/vsftpd.conf
@@ -111,7 +113,7 @@ fi
 %lang(pl) %{_mandir}/pl/man5/ftpusers*
 %lang(pt_BR) %{_mandir}/pt_BR/man5/ftpusers*
 %lang(ru) %{_mandir}/ru/man5/ftpusers*
-%dir /srv/ftp
-%dir /srv/ftp/pub
+%dir %{_ftpdir}
+%dir %{_ftpdir}/pub
 # it's safe - by default anon_upload_enable=NO, anon_world_readable_only=YES
-%attr(775,root,ftp) %dir /srv/ftp/pub/incoming
+%attr(775,root,ftp) %dir %{_ftpdir}/pub/incoming
