@@ -2,17 +2,17 @@ Summary:	vsftpd - Very Secure FTP Daemon
 Summary(pl):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR):	vsftpd - Daemon Ftp Muito Seguro
 Name:		vsftpd
-Version:	1.1.3
+Version:	1.2.0
 Release:	1
 License:	GPL v2
 Group:		Daemons
+# Source0-md5:	19c1818c102b63e4b0fea8d5b8b7c51f
 Source0:	ftp://vsftpd.beasts.org/users/cevans/%{name}-%{version}.tar.gz
-# Source0-md5:	3f5f59be09a6f89e516a75ad0d1e3802
 Source1:	%{name}.inetd
 Source2:	%{name}.pamd
 Source3:	%{name}-ftpusers
+# Source4-md5:	76c80b6ec9f4d079a1e27316edddbe16
 Source4:	ftpusers.tar.bz2
-# Source4-md5: 76c80b6ec9f4d079a1e27316edddbe16
 URL:		http://vsftpd.beasts.org/
 PreReq:		rc-inetd
 BuildRequires:	libcap-devel
