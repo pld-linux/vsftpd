@@ -1,0 +1,11 @@
+--- vsftpd-2.0.0/vsf_findlibs.sh.orig	2004-06-04 01:57:45.000000000 +0200
++++ vsftpd-2.0.0/vsf_findlibs.sh	2004-07-02 09:57:56.793388824 +0200
+@@ -18,6 +18,8 @@
+   locate_library /usr/lib/libpam.sl && echo "-lpam";
+   # AIX ends shared libraries with .a
+   locate_library /usr/lib/libpam.a && echo "-lpam";
++  # amd64
++  locate_library /usr/lib64/libpam.so && echo "-lpam";
+ else
+   locate_library /lib/libcrypt.so && echo "-lcrypt";
+   locate_library /usr/lib/libcrypt.so && echo "-lcrypt";
