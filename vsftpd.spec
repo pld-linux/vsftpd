@@ -17,6 +17,7 @@ Source3:	%{name}-ftpusers
 Source4:	ftpusers.tar.bz2
 # Source4-md5:	76c80b6ec9f4d079a1e27316edddbe16
 Patch0:		%{name}-builddefs.patch
+Patch1:		%{name}-amd64-findlibs.patch
 URL:		http://vsftpd.beasts.org/
 PreReq:		rc-inetd
 BuildRequires:	libcap-devel
@@ -58,6 +59,7 @@ Man Security Audit Team" Evans.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 %build
 %{__make} \
