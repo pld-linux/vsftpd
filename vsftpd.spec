@@ -13,6 +13,7 @@ Source3:	%{name}-ftpusers
 Source4:	ftpusers.tar.bz2
 URL:		http://vsftpd.beasts.org/
 PreReq:		rc-inetd
+BuildRequires:	libcap-devel
 Requires:	FHS >= 2.1-24
 Provides:	ftpserver
 Obsoletes:	ftpserver
