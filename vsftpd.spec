@@ -29,6 +29,7 @@ Obsoletes:	proftpd-standalone
 Obsoletes:	pure-ftpd
 Obsoletes:	troll-ftpd
 Obsoletes:	wu-ftpd
+Conflicts:	man-pages < 1.51
 
 %description
 A Very Secure FTP Daemon - written from scratch - by Chris "One Man
