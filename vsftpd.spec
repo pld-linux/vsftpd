@@ -1,5 +1,6 @@
 Summary:	vsftpd - Very Secure FTP Daemon
 Summary(pl):	Bardzo Bezpieczny Demon FTP
+Summary(pt_BR):	vsftpd - Daemon Ftp Muito Seguro
 Name:		vsftpd
 Version:	1.0.1
 Release:	2
@@ -10,9 +11,9 @@ Source1:	%{name}.inetd
 Source2:	%{name}.pamd
 Source3:	%{name}-ftpusers
 URL:		http://vsftpd.beasts.org/
-BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 PreReq:		rc-inetd
 Provides:	ftpserver
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	ftpserver
 Obsoletes:	anonftp
 Obsoletes:	bftpd
@@ -35,6 +36,10 @@ Security Audit Team" Evans.
 %description -l pl
 Bardzo Bezpieczny Demon FTP - napisany od zera przez Chrisa "One Man
 Security Audit Team" Evansa.
+
+%description -l pt_BR
+A Very Secure FTP Daemon (vsftpd) - escrito do zero - por Chris "One
+Man Security Audit Team" Evans.
 
 %prep
 %setup -q -n %{name}-%{version}
@@ -59,7 +64,7 @@ install RedHat/vsftpd.log $RPM_BUILD_ROOT/etc/logrotate.d/vsftpd
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/sysconfig/rc-inetd/vsftpd
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/pam.d/ftp
-install %{SOURCE3} $RPM_BUILD_ROOT/etc/ftpd/ftpusers
+install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/ftpd/ftpusers
 
 > $RPM_BUILD_ROOT/var/log/vsftpd.log
 
@@ -87,7 +92,7 @@ fi
 %attr(755,root,root) %{_sbindir}/vsftpd
 %dir %{_datadir}/empty
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/vsftpd.conf
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/ftpd/ftpusers
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/ftpd/ftpusers
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/rc-inetd/vsftpd
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/pam.d/ftp
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/logrotate.d/vsftpd
