@@ -15,7 +15,6 @@ URL:		http://vsftpd.beasts.org/
 PreReq:		rc-inetd
 Requires:	FHS >= 2.1-24
 Provides:	ftpserver
-BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	ftpserver
 Obsoletes:	anonftp
 Obsoletes:	bftpd
@@ -31,6 +30,7 @@ Obsoletes:	pure-ftpd
 Obsoletes:	troll-ftpd
 Obsoletes:	wu-ftpd
 Conflicts:	man-pages < 1.51
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 A Very Secure FTP Daemon - written from scratch - by Chris "One Man
