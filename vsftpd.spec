@@ -1,3 +1,6 @@
+#
+%define		_ftpdir	/home/services/ftp
+#
 Summary:	vsftpd - Very Secure FTP Daemon
 Summary(pl):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR):	vsftpd - Daemon Ftp Muito Seguro
@@ -35,8 +38,6 @@ Obsoletes:	troll-ftpd
 Obsoletes:	wu-ftpd
 Conflicts:	man-pages < 1.51
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
-
-%define	_ftpdir	/srv/ftp
 
 %description
 A Very Secure FTP Daemon - written from scratch - by Chris "One Man
