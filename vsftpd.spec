@@ -3,7 +3,7 @@ Summary(pl):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR):	vsftpd - Daemon Ftp Muito Seguro
 Name:		vsftpd
 Version:	1.2.1
-Release:	1
+Release:	2
 License:	GPL v2
 Group:		Daemons
 Source0:	ftp://vsftpd.beasts.org/users/cevans/%{name}-%{version}.tar.gz
