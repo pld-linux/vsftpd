@@ -57,7 +57,7 @@ Man Security Audit Team" Evans.
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_sbindir},%{_datadir}/empty,%{_mandir}/man{5,8}} \
 	$RPM_BUILD_ROOT/etc/{pam.d,sysconfig/rc-inetd,logrotate.d,ftpd} \
-	$RPM_BUILD_ROOT{/home/ftp/pub/Incoming,/var/log}
+	$RPM_BUILD_ROOT{/home/services/ftp/pub/Incoming,/var/log}
 
 install vsftpd $RPM_BUILD_ROOT%{_sbindir}/vsftpd
 install vsftpd.conf $RPM_BUILD_ROOT%{_sysconfdir}/vsftpd.conf
@@ -108,7 +108,7 @@ fi
 %lang(pl) %{_mandir}/pl/man5/ftpusers*
 %lang(pt_BR) %{_mandir}/pt_BR/man5/ftpusers*
 %lang(ru) %{_mandir}/ru/man5/ftpusers*
-%dir /home/ftp
-%dir /home/ftp/pub
+%dir /home/services/ftp
+%dir /home/services/ftp/pub
 # it's safe - by default anon_upload_enable=NO, anon_world_readable_only=YES
-%attr(775,root,ftp) %dir /home/ftp/pub/Incoming
+%attr(775,root,ftp) %dir /home/services/ftp/pub/Incoming
