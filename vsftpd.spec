@@ -3,7 +3,7 @@ Summary(pl):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR):	vsftpd - Daemon Ftp Muito Seguro
 Name:		vsftpd
 Version:	1.0.1
-Release:	3
+Release:	4
 License:	GPL v2
 Group:		Daemons
 Source0:	ftp://ferret.lmh.ox.ac.uk/pub/linux/vsftpd/%{name}-%{version}.tar.gz
@@ -13,6 +13,7 @@ Source3:	%{name}-ftpusers
 Source4:	ftpusers.tar.bz2
 URL:		http://vsftpd.beasts.org/
 PreReq:		rc-inetd
+Requires:	FHS >= 2.1-24
 Provides:	ftpserver
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	ftpserver
@@ -94,7 +95,6 @@ fi
 %doc AUDIT BENCHMARKS BUGS Changelog FAQ README REWARD SIZE SPEED TODO TUNING
 %doc SECURITY
 %attr(755,root,root) %{_sbindir}/vsftpd
-%dir %{_datadir}/empty
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/vsftpd.conf
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/ftpd/ftpusers
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/rc-inetd/vsftpd
