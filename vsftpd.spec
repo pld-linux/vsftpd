@@ -17,6 +17,7 @@ URL:		http://vsftpd.beasts.org/
 PreReq:		rc-inetd
 BuildRequires:	libcap-devel
 Requires:	FHS >= 2.1-24
+Requires:	pam >= 0.77.3
 Provides:	ftpserver
 Obsoletes:	ftpserver
 Obsoletes:	anonftp
