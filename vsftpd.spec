@@ -64,8 +64,8 @@ install -d $RPM_BUILD_ROOT{%{_sbindir},%{_datadir}/empty,%{_mandir}/man{5,8}} \
 
 install vsftpd $RPM_BUILD_ROOT%{_sbindir}/vsftpd
 install vsftpd.conf $RPM_BUILD_ROOT%{_sysconfdir}/vsftpd.conf
-install vsftpd.conf.5 $RPM_BUILD_ROOT/%{_mandir}/man5/vsftpd.conf.5
-install vsftpd.8 $RPM_BUILD_ROOT/%{_mandir}/man8/vsftpd.8
+install vsftpd.conf.5 $RPM_BUILD_ROOT%{_mandir}/man5/vsftpd.conf.5
+install vsftpd.8 $RPM_BUILD_ROOT%{_mandir}/man8/vsftpd.8
 install RedHat/vsftpd.log $RPM_BUILD_ROOT/etc/logrotate.d/vsftpd
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/sysconfig/rc-inetd/vsftpd
