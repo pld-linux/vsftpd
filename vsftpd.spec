@@ -48,7 +48,7 @@ A Very Secure FTP Daemon (vsftpd) - escrito do zero - por Chris "One
 Man Security Audit Team" Evans.
 
 %prep
-%setup -q -n %{name}-%{version}
+%setup -q
 
 %build
 %{__make} \
@@ -95,8 +95,7 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc AUDIT BENCHMARKS BUGS Changelog FAQ README REWARD SIZE SPEED TODO TUNING EXAMPLE
-%doc SECURITY
+%doc AUDIT BENCHMARKS BUGS Changelog FAQ README REWARD SIZE SPEED TODO TUNING EXAMPLE SECURITY
 %attr(755,root,root) %{_sbindir}/vsftpd
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/vsftpd.conf
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/ftpd/ftpusers
