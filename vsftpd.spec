@@ -3,13 +3,14 @@ Summary(pl):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR):	vsftpd - Daemon Ftp Muito Seguro
 Name:		vsftpd
 Version:	1.0.1
-Release:	2
+Release:	3
 License:	GPL v2
 Group:		Daemons
 Source0:	ftp://ferret.lmh.ox.ac.uk/pub/linux/vsftpd/%{name}-%{version}.tar.gz
 Source1:	%{name}.inetd
 Source2:	%{name}.pamd
 Source3:	%{name}-ftpusers
+Source4:	ftpusers.tar.bz2
 URL:		http://vsftpd.beasts.org/
 PreReq:		rc-inetd
 Provides:	ftpserver
@@ -68,6 +69,8 @@ install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/ftpd/ftpusers
 
 > $RPM_BUILD_ROOT/var/log/vsftpd.log
 
+bzip2 -dc %{SOURCE4} | tar xf - -C $RPM_BUILD_ROOT%{_mandir}
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -99,6 +102,11 @@ fi
 %attr(640,root,root) %ghost /var/log/vsftpd.log
 %{_mandir}/man5/vsftpd.conf.5*
 %{_mandir}/man8/vsftpd.8*
+%{_mandir}/man5/ftpusers.5*
+%lang(ja) %{_mandir}/ja/man5/ftpusers*
+%lang(pl) %{_mandir}/pl/man5/ftpusers*
+%lang(pt_BR) %{_mandir}/pt_BR/man5/ftpusers*
+%lang(ru) %{_mandir}/ru/man5/ftpusers*
 %dir /home/ftp
 %dir /home/ftp/pub
 # it's safe - by default anon_upload_enable=NO, anon_world_readable_only=YES
