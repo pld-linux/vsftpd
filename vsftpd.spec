@@ -3,7 +3,7 @@
 #
 Summary:	vsftpd - Very Secure FTP Daemon
 Summary(pl):	Bardzo Bezpieczny Demon FTP
-Summary(pt_BR):	vsftpd - Daemon Ftp Muito Seguro
+Summary(pt_BR):	vsftpd - Daemon FTP Muito Seguro
 Name:		vsftpd
 Version:	2.0.1
 Release:	1
