@@ -3,5 +3,5 @@ auth		required	pam_listfile.so item=user sense=deny file=/etc/ftpd/ftpusers oner
 auth		required	pam_unix.so
 auth		required	pam_shells.so
 auth		required	pam_nologin.so
-account    required	pam_unix.so
-session    required	pam_unix.so
+account		required	pam_unix.so
+session		required	pam_unix.so
