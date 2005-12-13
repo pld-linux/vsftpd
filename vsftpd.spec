@@ -19,12 +19,12 @@ Source4:	ftpusers.tar.bz2
 Patch0:		%{name}-builddefs.patch
 Patch1:		%{name}-amd64-findlibs.patch
 URL:		http://vsftpd.beasts.org/
-PreReq:		rc-inetd
 BuildRequires:	libcap-devel
 BuildRequires:	libwrap-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 Requires:	FHS >= 2.3
 Requires:	pam >= 0.77.3
+Requires:	rc-inetd
 Provides:	ftpserver
 Obsoletes:	ftpserver
 Obsoletes:	anonftp
@@ -108,11 +108,11 @@ fi
 %defattr(644,root,root,755)
 %doc AUDIT BENCHMARKS BUGS Changelog FAQ README REWARD SIZE SPEED TODO TUNING EXAMPLE SECURITY
 %attr(755,root,root) %{_sbindir}/vsftpd
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/vsftpd.conf
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/ftpd/ftpusers
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/rc-inetd/vsftpd
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/pam.d/ftp
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/logrotate.d/vsftpd
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/vsftpd.conf
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/ftpd/ftpusers
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/rc-inetd/vsftpd
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/pam.d/ftp
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/logrotate.d/vsftpd
 %attr(640,root,root) %ghost /var/log/vsftpd.log
 %{_mandir}/man5/vsftpd.conf.5*
 %{_mandir}/man8/vsftpd.8*
