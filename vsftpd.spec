@@ -6,7 +6,7 @@ Summary(pl):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR):	vsftpd - Daemon FTP Muito Seguro
 Name:		vsftpd
 Version:	2.0.3
-Release:	1
+Release:	1.1
 License:	GPL v2
 Group:		Daemons
 Source0:	ftp://vsftpd.beasts.org/users/cevans/%{name}-%{version}.tar.gz
@@ -16,6 +16,7 @@ Source2:	%{name}.pamd
 Source3:	%{name}-ftpusers
 Source4:	ftpusers.tar.bz2
 # Source4-md5:	76c80b6ec9f4d079a1e27316edddbe16
+Source5:	%{name}.init
 Patch0:		%{name}-builddefs.patch
 Patch1:		%{name}-amd64-findlibs.patch
 URL:		http://vsftpd.beasts.org/
@@ -25,6 +26,7 @@ BuildRequires:	openssl-devel >= 0.9.7d
 Requires:	FHS >= 2.3
 Requires:	pam >= 0.77.3
 Requires:	rc-inetd
+Requires:	%{name}-init = %{version}-%{release}
 Provides:	ftpserver
 Obsoletes:	ftpserver
 Obsoletes:	anonftp
@@ -56,6 +58,41 @@ Security Audit Team" Evansa.
 A Very Secure FTP Daemon (vsftpd) - escrito do zero - por Chris "One
 Man Security Audit Team" Evans.
 
+%package inetd
+Summary:	vsftpd - Very Secure FTP Daemon
+Summary(pl):	Bardzo Bezpieczny Demon FTP
+Summary(pt_BR):	vsftpd - Daemon FTP Muito Seguro
+Group:		Networking/Daemons
+Requires:	%{name} = %{version}-%{release}
+Requires:	rc-inetd
+Provides:	%{name}-init = %{version}-%{release}
+Obsoletes:	%{name}-standalone
+Conflicts:	%{name} <= 2.0.3-1
+
+%description inetd
+This package allows to start vsftpd as inetd service.
+
+%description inetd -l pl
+Ten pakiet pozwala na wystartowanie vsftpd jako serwis inetd.
+
+%package standalone
+Summary:	vsftpd - Very Secure FTP Daemon
+Summary(pl):	Bardzo Bezpieczny Demon FTP
+Summary(pt_BR):	vsftpd - Daemon FTP Muito Seguro
+Group:		Networking/Daemons
+Requires(post,preun):	/sbin/chkconfig
+Requires:	%{name} = %{version}-%{release}
+Requires:	rc-scripts
+Provides:	%{name}-init = %{version}-%{release}
+Obsoletes:	%{name}-inetd
+Conflicts:	%{name} <= 2.0.3-1
+
+%description standalone
+This package allows to start vsftpd as standalone daemon.
+
+%description standalone -l pl
+Ten pakiet pozwala na wystartowanie vsftpd jako samodzielnego demona.
+
 %prep
 %setup -q
 %patch0 -p1
@@ -70,7 +107,7 @@ Man Security Audit Team" Evans.
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_sbindir},%{_datadir}/empty,%{_mandir}/man{5,8}} \
-	$RPM_BUILD_ROOT/etc/{pam.d,sysconfig/rc-inetd,logrotate.d,ftpd} \
+	$RPM_BUILD_ROOT/etc/{pam.d,sysconfig/rc-inetd,logrotate.d,ftpd,rc.d/init.d} \
 	$RPM_BUILD_ROOT{%{_ftpdir}/pub/incoming,/var/log}
 
 install vsftpd $RPM_BUILD_ROOT%{_sbindir}/vsftpd
@@ -82,6 +119,7 @@ install RedHat/vsftpd.log $RPM_BUILD_ROOT/etc/logrotate.d/vsftpd
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/sysconfig/rc-inetd/vsftpd
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/pam.d/ftp
 install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/ftpd/ftpusers
+install %{SOURCE5} $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/vsftpd
 
 > $RPM_BUILD_ROOT/var/log/vsftpd.log
 
@@ -93,15 +131,33 @@ rm -rf $RPM_BUILD_ROOT
 %post
 touch /var/log/vsftpd.log
 chmod 640 /var/log/vsftpd.log
+
+%post inetd
 if [ -f /var/lock/subsys/rc-inetd ]; then
 	/etc/rc.d/init.d/rc-inetd reload 1>&2
 else
 	echo "Type \"/etc/rc.d/init.d/rc-inetd start\" to start inet server" 1>&2
 fi
 
-%postun
+%postun inetd
 if [ "$1" = "0" -a -f /var/lock/subsys/rc-inetd ]; then
 	/etc/rc.d/init.d/rc-inetd reload 1>&2
+fi
+
+%post standalone
+/sbin/chkconfig --add %{name}
+if [ -f /var/lock/subsys/vsftpd ]; then
+	/etc/rc.d/init.d/vsftpd restart 1>&2
+else
+	echo "Type \"/etc/rc.d/init.d/vsftpd start\" to start vsftpd server" 1>&2
+fi
+
+%preun standalone
+if [ "$1" = "0" ]; then
+	if [ -f /var/lock/subsys/vsftpd ]; then
+		/etc/rc.d/init.d/vsftpd stop >&2
+	fi
+	/sbin/chkconfig --del %{name}
 fi
 
 %files
@@ -110,7 +166,6 @@ fi
 %attr(755,root,root) %{_sbindir}/vsftpd
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/vsftpd.conf
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/ftpd/ftpusers
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/rc-inetd/vsftpd
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/pam.d/ftp
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/logrotate.d/vsftpd
 %attr(640,root,root) %ghost /var/log/vsftpd.log
@@ -125,3 +180,11 @@ fi
 %dir %{_ftpdir}/pub
 # it's safe - by default anon_upload_enable=NO, anon_world_readable_only=YES
 %attr(775,root,ftp) %dir %{_ftpdir}/pub/incoming
+
+%files inetd
+%defattr(644,root,root,755)
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/rc-inetd/vsftpd
+
+%files standalone
+%defattr(644,root,root,755)
+%attr(754,root,root) /etc/rc.d/init.d/vsftpd
