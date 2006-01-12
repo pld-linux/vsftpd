@@ -73,7 +73,7 @@ Conflicts:	%{name} <= 2.0.3-1
 This package allows to start vsftpd as inetd service.
 
 %description inetd -l pl
-Ten pakiet pozwala na wystartowanie vsftpd jako us³ugê inetd.
+Ten pakiet pozwala na wystartowanie vsftpd jako us³ugi inetd.
 
 %package standalone
 Summary:	vsftpd - Very Secure FTP Daemon
