@@ -25,7 +25,6 @@ BuildRequires:	libwrap-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 Requires:	FHS >= 2.3
 Requires:	pam >= 0.77.3
-Requires:	rc-inetd
 Requires:	%{name}-init = %{version}-%{release}
 Provides:	ftpserver
 Obsoletes:	ftpserver
