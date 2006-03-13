@@ -23,14 +23,15 @@ URL:		http://vsftpd.beasts.org/
 BuildRequires:	libcap-devel
 BuildRequires:	libwrap-devel
 BuildRequires:	openssl-devel >= 0.9.7d
+BuildRequires:	rpmbuild(macros) >= 1.268
+Requires:	%{name}-init = %{version}-%{release}
 Requires:	FHS >= 2.3
 Requires:	pam >= 0.77.3
-Requires:	%{name}-init = %{version}-%{release}
 Provides:	ftpserver
-Obsoletes:	ftpserver
 Obsoletes:	anonftp
 Obsoletes:	bftpd
 Obsoletes:	ftpd-BSD
+Obsoletes:	ftpserver
 Obsoletes:	glftpd
 Obsoletes:	heimdal-ftpd
 Obsoletes:	linux-ftpd
@@ -65,7 +66,7 @@ Group:		Networking/Daemons
 Requires:	%{name} = %{version}-%{release}
 Requires:	rc-inetd
 Provides:	%{name}-init = %{version}-%{release}
-Obsoletes:	%{name}-standalone
+Obsoletes:	vsftpd-standalone
 Conflicts:	%{name} <= 2.0.3-1
 
 %description inetd
@@ -83,7 +84,7 @@ Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name} = %{version}-%{release}
 Requires:	rc-scripts
 Provides:	%{name}-init = %{version}-%{release}
-Obsoletes:	%{name}-inetd
+Obsoletes:	vsftpd-inetd
 Conflicts:	%{name} <= 2.0.3-1
 
 %description standalone
@@ -132,30 +133,20 @@ touch /var/log/vsftpd.log
 chmod 640 /var/log/vsftpd.log
 
 %post inetd
-if [ -f /var/lock/subsys/rc-inetd ]; then
-	/etc/rc.d/init.d/rc-inetd reload 1>&2
-else
-	echo "Type \"/etc/rc.d/init.d/rc-inetd start\" to start inet server" 1>&2
-fi
+%service -q rc-inetd reload
 
 %postun inetd
-if [ "$1" = "0" -a -f /var/lock/subsys/rc-inetd ]; then
-	/etc/rc.d/init.d/rc-inetd reload 1>&2
+if [ "$1" = "0" ]; then
+	%service -q rc-inetd reload
 fi
 
 %post standalone
 /sbin/chkconfig --add %{name}
-if [ -f /var/lock/subsys/vsftpd ]; then
-	/etc/rc.d/init.d/vsftpd restart 1>&2
-else
-	echo "Type \"/etc/rc.d/init.d/vsftpd start\" to start vsftpd server" 1>&2
-fi
+%service vsftpd restart "vsftpd server"
 
 %preun standalone
 if [ "$1" = "0" ]; then
-	if [ -f /var/lock/subsys/vsftpd ]; then
-		/etc/rc.d/init.d/vsftpd stop >&2
-	fi
+	%service vsftpd stop
 	/sbin/chkconfig --del %{name}
 fi
 
