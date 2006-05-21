@@ -6,7 +6,7 @@ Summary(pl):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR):	vsftpd - Daemon FTP Muito Seguro
 Name:		vsftpd
 Version:	2.0.4
-Release:	2
+Release:	3
 License:	GPL v2
 Group:		Daemons
 Source0:	ftp://vsftpd.beasts.org/users/cevans/%{name}-%{version}.tar.gz
@@ -124,6 +124,7 @@ install %{SOURCE5} $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/vsftpd
 > $RPM_BUILD_ROOT/var/log/vsftpd.log
 
 bzip2 -dc %{SOURCE4} | tar xf - -C $RPM_BUILD_ROOT%{_mandir}
+rm -f $RPM_BUILD_ROOT/usr/share/man/ftpusers-path.diff
 
 %clean
 rm -rf $RPM_BUILD_ROOT
