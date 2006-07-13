@@ -29,8 +29,8 @@ case "$1" in
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/vsftpd ]; then
 		# Check if we have 'Listen=yes' in config
-		if ! egrep -q '^listen=([Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1)' /etc/vsftpd.conf; then
-			echo "error: Missing 'listen=yes' directive in /etc/vsftpd.conf!"
+		if ! egrep -q '^(listen|listen_ipv6)=([Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|1)' /etc/vsftpd.conf; then
+			echo "error: Missing 'listen=yes' or 'listen_ipv6=yes' directive in /etc/vsftpd.conf!"
 			exit 1
 		fi;
 		msg_starting vsftpd
