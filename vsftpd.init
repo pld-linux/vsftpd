@@ -33,6 +33,8 @@ case "$1" in
 			echo "error: Missing 'listen=yes' or 'listen_ipv6=yes' directive in /etc/vsftpd.conf!"
 			exit 1
 		fi;
+		# try to load capability module
+		_modprobe capability
 		msg_starting vsftpd
 		daemon --fork /usr/sbin/vsftpd 
 		RETVAL=$?
