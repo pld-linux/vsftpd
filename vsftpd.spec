@@ -6,7 +6,7 @@ Summary(pl):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR):	vsftpd - Daemon FTP Muito Seguro
 Name:		vsftpd
 Version:	2.0.5
-Release:	1
+Release:	2
 License:	GPL v2
 Group:		Daemons
 Source0:	ftp://vsftpd.beasts.org/users/cevans/%{name}-%{version}.tar.gz
@@ -25,7 +25,7 @@ BuildRequires:	libwrap-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	rpmbuild(macros) >= 1.268
 Requires:	%{name}-init = %{version}-%{release}
-Requires:	FHS >= 2.3
+Requires:	filesystem >= 3.0-11
 Requires:	pam >= 0.77.3
 Provides:	ftpserver
 Obsoletes:	anonftp
@@ -106,7 +106,7 @@ Ten pakiet pozwala na wystartowanie vsftpd jako samodzielnego demona.
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_sbindir},%{_datadir}/empty,%{_mandir}/man{5,8}} \
+install -d $RPM_BUILD_ROOT{%{_sbindir},%{_mandir}/man{5,8}} \
 	$RPM_BUILD_ROOT/etc/{pam.d,sysconfig/rc-inetd,logrotate.d,ftpd,rc.d/init.d} \
 	$RPM_BUILD_ROOT{%{_ftpdir}/pub/incoming,/var/log}
 
