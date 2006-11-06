@@ -25,7 +25,7 @@ BuildRequires:	libwrap-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	rpmbuild(macros) >= 1.268
 Requires:	%{name}-init = %{version}-%{release}
-Requires:	filesystem >= 3.0-11
+Requires:	filesystem >= 2.0-1
 Requires:	pam >= 0.77.3
 Provides:	ftpserver
 Obsoletes:	anonftp
