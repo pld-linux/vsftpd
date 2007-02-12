@@ -2,8 +2,8 @@
 %define		_ftpdir	/home/services/ftp
 #
 Summary:	vsftpd - Very Secure FTP Daemon
-Summary(pl):	Bardzo Bezpieczny Demon FTP
-Summary(pt_BR):	vsftpd - Daemon FTP Muito Seguro
+Summary(pl.UTF-8):   Bardzo Bezpieczny Demon FTP
+Summary(pt_BR.UTF-8):   vsftpd - Daemon FTP Muito Seguro
 Name:		vsftpd
 Version:	2.0.5
 Release:	2
@@ -50,18 +50,18 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 A Very Secure FTP Daemon - written from scratch - by Chris "One Man
 Security Audit Team" Evans.
 
-%description -l pl
+%description -l pl.UTF-8
 Bardzo Bezpieczny Demon FTP - napisany od zera przez Chrisa "One Man
 Security Audit Team" Evansa.
 
-%description -l pt_BR
+%description -l pt_BR.UTF-8
 A Very Secure FTP Daemon (vsftpd) - escrito do zero - por Chris "One
 Man Security Audit Team" Evans.
 
 %package inetd
 Summary:	vsftpd - Very Secure FTP Daemon
-Summary(pl):	Bardzo Bezpieczny Demon FTP
-Summary(pt_BR):	vsftpd - Daemon FTP Muito Seguro
+Summary(pl.UTF-8):   Bardzo Bezpieczny Demon FTP
+Summary(pt_BR.UTF-8):   vsftpd - Daemon FTP Muito Seguro
 Group:		Networking/Daemons
 Requires:	%{name} = %{version}-%{release}
 Requires:	rc-inetd
@@ -72,13 +72,13 @@ Conflicts:	%{name} <= 2.0.3-1
 %description inetd
 This package allows to start vsftpd as inetd service.
 
-%description inetd -l pl
-Ten pakiet pozwala na wystartowanie vsftpd jako us³ugi inetd.
+%description inetd -l pl.UTF-8
+Ten pakiet pozwala na wystartowanie vsftpd jako usÅ‚ugi inetd.
 
 %package standalone
 Summary:	vsftpd - Very Secure FTP Daemon
-Summary(pl):	Bardzo Bezpieczny Demon FTP
-Summary(pt_BR):	vsftpd - Daemon FTP Muito Seguro
+Summary(pl.UTF-8):   Bardzo Bezpieczny Demon FTP
+Summary(pt_BR.UTF-8):   vsftpd - Daemon FTP Muito Seguro
 Group:		Networking/Daemons
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name} = %{version}-%{release}
@@ -90,7 +90,7 @@ Conflicts:	%{name} <= 2.0.3-1
 %description standalone
 This package allows to start vsftpd as standalone daemon.
 
-%description standalone -l pl
+%description standalone -l pl.UTF-8
 Ten pakiet pozwala na wystartowanie vsftpd jako samodzielnego demona.
 
 %prep
