@@ -2,8 +2,8 @@
 %define		_ftpdir	/home/services/ftp
 #
 Summary:	vsftpd - Very Secure FTP Daemon
-Summary(pl.UTF-8):   Bardzo Bezpieczny Demon FTP
-Summary(pt_BR.UTF-8):   vsftpd - Daemon FTP Muito Seguro
+Summary(pl.UTF-8):	Bardzo Bezpieczny Demon FTP
+Summary(pt_BR.UTF-8):	vsftpd - Daemon FTP Muito Seguro
 Name:		vsftpd
 Version:	2.0.5
 Release:	2
@@ -60,8 +60,8 @@ Man Security Audit Team" Evans.
 
 %package inetd
 Summary:	vsftpd - Very Secure FTP Daemon
-Summary(pl.UTF-8):   Bardzo Bezpieczny Demon FTP
-Summary(pt_BR.UTF-8):   vsftpd - Daemon FTP Muito Seguro
+Summary(pl.UTF-8):	Bardzo Bezpieczny Demon FTP
+Summary(pt_BR.UTF-8):	vsftpd - Daemon FTP Muito Seguro
 Group:		Networking/Daemons
 Requires:	%{name} = %{version}-%{release}
 Requires:	rc-inetd
@@ -77,8 +77,8 @@ Ten pakiet pozwala na wystartowanie vsftpd jako usługi inetd.
 
 %package standalone
 Summary:	vsftpd - Very Secure FTP Daemon
-Summary(pl.UTF-8):   Bardzo Bezpieczny Demon FTP
-Summary(pt_BR.UTF-8):   vsftpd - Daemon FTP Muito Seguro
+Summary(pl.UTF-8):	Bardzo Bezpieczny Demon FTP
+Summary(pt_BR.UTF-8):	vsftpd - Daemon FTP Muito Seguro
 Group:		Networking/Daemons
 Requires(post,preun):	/sbin/chkconfig
 Requires:	%{name} = %{version}-%{release}
