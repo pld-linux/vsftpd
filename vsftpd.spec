@@ -6,7 +6,7 @@ Summary(pl.UTF-8):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR.UTF-8):	vsftpd - Daemon FTP Muito Seguro
 Name:		vsftpd
 Version:	2.0.5
-Release:	4
+Release:	5
 License:	GPL v2
 Group:		Daemons
 Source0:	ftp://vsftpd.beasts.org/users/cevans/%{name}-%{version}.tar.gz
@@ -28,22 +28,6 @@ Requires:	%{name}-init = %{version}-%{release}
 Requires:	filesystem >= 3.0-11
 Requires:	pam >= 0.77.3
 Provides:	ftpserver
-Obsoletes:	anonftp
-Obsoletes:	bftpd
-Obsoletes:	ftpd-BSD
-Obsoletes:	ftpserver
-Obsoletes:	glftpd
-Obsoletes:	heimdal-ftpd
-Obsoletes:	krb5-ftpd
-Obsoletes:	linux-ftpd
-Obsoletes:	muddleftpd
-Obsoletes:	proftpd
-Obsoletes:	proftpd-common
-Obsoletes:	proftpd-inetd
-Obsoletes:	proftpd-standalone
-Obsoletes:	pure-ftpd
-Obsoletes:	troll-ftpd
-Obsoletes:	wu-ftpd
 Conflicts:	man-pages < 1.51
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
