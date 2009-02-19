@@ -1,5 +1,5 @@
---- vsftpd-2.0.0/vsf_findlibs.sh.orig	2004-06-04 01:57:45.000000000 +0200
-+++ vsftpd-2.0.0/vsf_findlibs.sh	2004-07-02 11:12:10.358344040 +0200
+--- vsftpd-2.1.0/vsf_findlibs.sh.orig	2008-11-03 01:46:34.000000000 +0100
++++ vsftpd-2.1.0/vsf_findlibs.sh	2009-02-19 23:04:43.659076603 +0100
 @@ -18,6 +18,8 @@
    locate_library /usr/lib/libpam.sl && echo "-lpam";
    # AIX ends shared libraries with .a
@@ -9,11 +9,11 @@
  else
    locate_library /lib/libcrypt.so && echo "-lcrypt";
    locate_library /usr/lib/libcrypt.so && echo "-lcrypt";
-@@ -45,6 +47,7 @@
- locate_library /lib/libcap.so.1 && echo "/lib/libcap.so.1";
- locate_library /usr/lib/libcap.so && echo "-lcap";
- locate_library /lib/libcap.so && echo "-lcap";
-+locate_library /lib64/libcap.so && echo "-lcap";
+@@ -48,6 +50,7 @@
+ else
+   locate_library /usr/lib/libcap.so && echo "-lcap";
+   locate_library /lib/libcap.so && echo "-lcap";
++  locate_library /lib64/libcap.so && echo "-lcap";
+ fi
  
  # Solaris needs this for nanosleep()..
- locate_library /lib/libposix4.so && echo "-lposix4";
