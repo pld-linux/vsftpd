@@ -1,4 +1,7 @@
 #
+# Conditional build:
+%bcond_without	ssl		# build without OpenSSL support
+#
 %define		_ftpdir	/home/services/ftp
 #
 Summary:	vsftpd - Very Secure FTP Daemon
@@ -22,7 +25,7 @@ Patch1:		%{name}-amd64-findlibs.patch
 URL:		http://vsftpd.beasts.org/
 BuildRequires:	libcap-devel
 BuildRequires:	libwrap-devel
-BuildRequires:	openssl-devel >= 0.9.7d
+%{?with_ssl:BuildRequires:	openssl-devel >= 0.9.8j}
 BuildRequires:	rpmbuild(macros) >= 1.268
 Requires:	%{name}-init = %{version}-%{release}
 Requires:	filesystem >= 2.0-1
@@ -95,7 +98,7 @@ Ten pakiet pozwala na wystartowanie vsftpd jako samodzielnego demona.
 
 %prep
 %setup -q
-%patch0 -p1
+%{?with_ssl:%patch0 -p1}
 %patch1 -p1
 
 %build
