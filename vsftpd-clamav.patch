@@ -1,0 +1,658 @@
+Add support for scanning uploaded files with clamav. Not all features are 
+implemented (ex. file inclusion/exclusion for scanning). Every uploaded file is
+saved in random named file, and moved to destination file after scanning. Side
+effects: when uploaded *new* file was infected, 0-size file left.
+
+Written by Marek Marczykowski <m.marczykowski@fiok.pl>
+
+diff -Nru vsftpd-2.1.0.orig/Makefile vsftpd-2.1.0/Makefile
+--- vsftpd-2.1.0.orig/Makefile	2009-02-18 23:28:05.000000000 +0100
++++ vsftpd-2.1.0/Makefile	2009-05-08 19:32:07.000000000 +0200
+@@ -14,7 +14,7 @@
+     banner.o filestr.o parseconf.o secutil.o \
+     ascii.o oneprocess.o twoprocess.o privops.o standalone.o hash.o \
+     tcpwrap.o ipaddrparse.o access.o features.o readwrite.o opts.o \
+-    ssl.o sslslave.o ptracesandbox.o ftppolicy.o sysutil.o sysdeputil.o
++    ssl.o sslslave.o ptracesandbox.o ftppolicy.o sysutil.o sysdeputil.o clamav.o
+ 
+ 
+ .c.o:
+diff -Nru vsftpd-2.1.0.orig/clamav.c vsftpd-2.1.0/clamav.c
+--- vsftpd-2.1.0.orig/clamav.c	1970-01-01 01:00:00.000000000 +0100
++++ vsftpd-2.1.0/clamav.c	2009-05-08 19:32:07.000000000 +0200
+@@ -0,0 +1,221 @@
++#include <sys/types.h>
++#include <regex.h>
++#include <sys/socket.h>
++#include <linux/un.h>
++#include <arpa/inet.h>
++#include <netdb.h>
++#include <sys/socket.h>
++#include <stdio.h>
++#include "clamav.h"
++#include "tunables.h"
++#include "utility.h"
++#include "sysutil.h"
++#include "logging.h"
++#include "sysstr.h"
++
++regex_t av_include_files_regex, av_exclude_files_regex;
++
++int av_init() {
++	int ret;
++
++	if (tunable_av_enable) {
++		if (tunable_av_include_files) {
++			if ((ret=regcomp(&av_include_files_regex, tunable_av_include_files, REG_NOSUB)) != 0)
++				die("regex compilation failed for AvIncludeFiles");
++		}
++		if (tunable_av_exclude_files) {
++			if ((ret=regcomp(&av_exclude_files_regex, tunable_av_exclude_files, REG_NOSUB)) != 0)
++				die("regex compilation failed for AvExcludeFiles");
++		}
++	}
++	return 0;
++}
++
++int av_will_scan(const char *filename) {
++	if (!tunable_av_enable)
++		return 0;
++	if (tunable_av_include_files && (regexec(&av_include_files_regex, filename, 0, 0, 0)!=0))
++		return 0;
++	if (tunable_av_exclude_files && (regexec(&av_exclude_files_regex, filename, 0, 0, 0)==0))
++		return 0;
++	return 1;
++}
++
++int av_init_scanner (struct vsf_session* p_sess) {
++	struct mystr debug_str = INIT_MYSTR;
++
++	if (p_sess->clamd_sock < 0) {
++		
++		/* connect to clamd through local unix socket */
++		if (tunable_av_clamd_socket) {
++			struct sockaddr_un server_local;
++
++			vsf_sysutil_memclr((char*)&server_local, sizeof(server_local));
++
++			server_local.sun_family = AF_UNIX;
++			vsf_sysutil_strcpy(server_local.sun_path, tunable_av_clamd_socket, sizeof(server_local.sun_path));
++			if ((p_sess->clamd_sock = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
++				str_alloc_text(&debug_str, "av: error opening unix socket");
++				vsf_log_line(p_sess, kVSFLogEntryDebug, &debug_str);
++				p_sess->clamd_sock = -2;
++				return 0;
++			}
++
++			if (connect(p_sess->clamd_sock, (struct sockaddr *)&server_local, sizeof(struct sockaddr_un)) < 0) {
++				str_alloc_text(&debug_str, "av: error connecting to clamd");
++				vsf_log_line(p_sess, kVSFLogEntryDebug, &debug_str);
++				p_sess->clamd_sock = -2;
++				return 0;
++			}
++
++		} else if (tunable_av_clamd_host) {
++			struct sockaddr_in server_inet;
++			struct hostent *he;
++
++			vsf_sysutil_memclr((char*)&server_inet, sizeof(server_inet));
++
++			/* Remote Socket */
++			server_inet.sin_family = AF_INET;
++			server_inet.sin_port = htons(tunable_av_clamd_port);
++
++			if ((p_sess->clamd_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
++				str_alloc_text(&debug_str, "av: error opening inet socket");
++				vsf_log_line(p_sess, kVSFLogEntryDebug, &debug_str);
++				p_sess->clamd_sock = -2;
++				return 0;
++			}
++
++			if ((he = gethostbyname(tunable_av_clamd_host)) == 0) {
++				str_alloc_text(&debug_str, "av: unable to locate clamd host");
++				vsf_log_line(p_sess, kVSFLogEntryDebug, &debug_str);
++				vsf_sysutil_close_failok(p_sess->clamd_sock);
++				p_sess->clamd_sock = -2;
++				return 0;
++			}
++
++			server_inet.sin_addr = *(struct in_addr *) he->h_addr_list[0];
++
++			if (connect(p_sess->clamd_sock, (struct sockaddr *)&server_inet, sizeof(struct sockaddr_in)) < 0) {
++				str_alloc_text(&debug_str, "av: error connecting to clamd host");
++				vsf_log_line(p_sess, kVSFLogEntryDebug, &debug_str);
++				vsf_sysutil_close_failok(p_sess->clamd_sock);
++				p_sess->clamd_sock = -2;
++				return 0;
++			}
++		}
++
++		if (vsf_sysutil_write(p_sess->clamd_sock, "nIDSESSION\n", 11) <= 0) {
++			str_alloc_text(&debug_str, "av: error starting clamd session");
++			vsf_log_line(p_sess, kVSFLogEntryDebug, &debug_str);
++			vsf_sysutil_close_failok(p_sess->clamd_sock);
++			p_sess->clamd_sock = -2;
++			return 0;
++		}
++	}
++
++	return 1;
++}
++
++int av_scan_file(struct vsf_session* p_sess, struct mystr *filename, struct mystr *virname) {
++	struct mystr cwd = INIT_MYSTR;
++	struct mystr clamcmd = INIT_MYSTR;
++	struct mystr response = INIT_MYSTR;
++	char recv_buff[4096];
++	int recv_count;
++	struct str_locate_result locate_res;
++	struct mystr debug_str = INIT_MYSTR;
++	int retry = 0;
++
++init_scan:
++	if (av_init_scanner(p_sess)) {
++
++		str_alloc_text(&clamcmd, "nSCAN ");
++		if (!str_isempty(&p_sess->chroot_str)) {
++			str_append_str(&clamcmd, &p_sess->chroot_str);
++		}
++		if (str_get_char_at(filename, 0) != '/') {
++			str_getcwd(&cwd);
++			str_append_str(&clamcmd, &cwd);
++		}
++		if (str_get_char_at(&clamcmd, str_getlen(&clamcmd) - 1) != '/') { 
++			str_append_char(&clamcmd, '/');
++		}
++		str_append_str(&clamcmd, filename);
++		str_append_char(&clamcmd, '\n');
++
++//		sprintf(recv_buff, "sockfd: %d", p_sess->clamd_sock);
++//		str_alloc_text(&debug_str, recv_buff);
++//		vsf_log_line(p_sess, kVSFLogEntryDebug, &p_sess->chroot_str);
++//		vsf_log_line(p_sess, kVSFLogEntryDebug, &clamcmd);
++
++		if (vsf_sysutil_write(p_sess->clamd_sock, str_getbuf(&clamcmd), str_getlen(&clamcmd)) <= 0) {
++			str_alloc_text(&debug_str, "av: failed to scan file");
++			vsf_log_line(p_sess, kVSFLogEntryDebug, &debug_str);
++			vsf_sysutil_close_failok(p_sess->clamd_sock);
++			p_sess->clamd_sock = -2;
++			return 2;
++		}
++
++		str_free(&clamcmd);
++
++		/* receive and interpret answer */
++		while ((recv_count=vsf_sysutil_read(p_sess->clamd_sock, recv_buff, 4095)) > 0) {
++			recv_buff[recv_count]=0;
++			str_append_text(&response, recv_buff);
++			if (recv_buff[recv_count-1] == '\n')
++				break;
++		}
++		if (recv_count < 0 || str_getlen(&response) == 0) {
++			if (!retry) {
++				retry = 1;
++				vsf_sysutil_close_failok(p_sess->clamd_sock);
++				p_sess->clamd_sock = -2;
++				goto init_scan;
++			} else {
++				str_alloc_text(&debug_str, "av: failed to scan file (read failed)");
++				vsf_log_line(p_sess, kVSFLogEntryDebug, &debug_str);
++				vsf_sysutil_close(p_sess->clamd_sock);
++				p_sess->clamd_sock = -2;
++				return 2;
++			}
++		}
++		
++		if (str_equal_text(&response, "COMMAND READ TIMED OUT\n")) {
++			if (!retry) {
++				retry = 1;
++				vsf_sysutil_close_failok(p_sess->clamd_sock);
++				p_sess->clamd_sock = -2;
++				goto init_scan;
++			} else {
++				str_alloc_text(&debug_str, "av: got: ");
++				str_append_str(&debug_str, &response);
++				vsf_log_line(p_sess, kVSFLogEntryDebug, &debug_str);
++				return 2;
++			}
++		}
++
++
++
++		locate_res = str_locate_text(&response, " FOUND\n");
++		/* virus found */
++		if (locate_res.found) {
++			str_trunc(&response, locate_res.index);
++			str_split_text_reverse(&response, virname, ": ");
++			return 1;
++		}
++		locate_res = str_locate_text(&response, " ERROR\n");
++		if (locate_res.found) {
++			str_alloc_text(&debug_str, "av: got: ");
++			str_append_str(&debug_str, &response);
++			vsf_log_line(p_sess, kVSFLogEntryDebug, &debug_str);
++			return 2;
++		}
++		return 0;
++	}
++
++	return 2;
++}
++
++
++
++
+diff -Nru vsftpd-2.1.0.orig/clamav.h vsftpd-2.1.0/clamav.h
+--- vsftpd-2.1.0.orig/clamav.h	1970-01-01 01:00:00.000000000 +0100
++++ vsftpd-2.1.0/clamav.h	2009-05-08 19:32:07.000000000 +0200
+@@ -0,0 +1,12 @@
++#ifndef _CLAMAV_H
++#define _CLAMAV_H
++
++#include "str.h"
++#include "session.h"
++
++extern int av_init();
++extern int av_will_scan(const char *filename);
++extern int av_init_scanner (struct vsf_session* p_sess);
++extern int av_scan_file(struct vsf_session* p_sess, struct mystr *filename, struct mystr *virname);
++
++#endif
+diff -Nru vsftpd-2.1.0.orig/main.c vsftpd-2.1.0/main.c
+--- vsftpd-2.1.0.orig/main.c	2009-01-07 22:50:42.000000000 +0100
++++ vsftpd-2.1.0/main.c	2009-05-08 19:32:07.000000000 +0200
+@@ -65,7 +65,9 @@
+     /* Secure connection state */
+     0, 0, 0, 0, 0, INIT_MYSTR, 0, -1, -1,
+     /* Login fails */
+-    0
++    0,
++	/* av */
++	-1, INIT_MYSTR
+   };
+   int config_specified = 0;
+   const char* p_config_name = VSFTP_DEFAULT_CONFIG;
+diff -Nru vsftpd-2.1.0.orig/parseconf.c vsftpd-2.1.0/parseconf.c
+--- vsftpd-2.1.0.orig/parseconf.c	2008-12-18 07:21:41.000000000 +0100
++++ vsftpd-2.1.0/parseconf.c	2009-05-08 19:32:07.000000000 +0200
+@@ -106,6 +106,7 @@
+   { "implicit_ssl", &tunable_implicit_ssl },
+   { "sandbox", &tunable_sandbox },
+   { "require_ssl_reuse", &tunable_require_ssl_reuse },
++  { "av_enable", &tunable_av_enable },
+   { 0, 0 }
+ };
+ 
+@@ -136,6 +137,7 @@
+   { "delay_successful_login", &tunable_delay_successful_login },
+   { "max_login_fails", &tunable_max_login_fails },
+   { "chown_upload_mode", &tunable_chown_upload_mode },
++  { "av_clamd_port", &tunable_av_clamd_port },
+   { 0, 0 }
+ };
+ 
+@@ -178,6 +180,10 @@
+   { "dsa_private_key_file", &tunable_dsa_private_key_file },
+   { "ca_certs_file", &tunable_ca_certs_file },
+   { "cmds_denied", &tunable_cmds_denied },
++  { "av_clamd_socket", &tunable_av_clamd_socket },
++  { "av_clamd_host", &tunable_av_clamd_host },
++  { "av_include_files", &tunable_av_include_files },
++  { "av_exclude_files", &tunable_av_exclude_files },
+   { 0, 0 }
+ };
+ 
+diff -Nru vsftpd-2.1.0.orig/postlogin.c vsftpd-2.1.0/postlogin.c
+--- vsftpd-2.1.0.orig/postlogin.c	2008-12-19 05:20:48.000000000 +0100
++++ vsftpd-2.1.0/postlogin.c	2009-05-08 19:32:07.000000000 +0200
+@@ -27,6 +27,7 @@
+ #include "ssl.h"
+ #include "vsftpver.h"
+ #include "opts.h"
++#include "clamav.h"
+ 
+ /* Private local functions */
+ static void handle_pwd(struct vsf_session* p_sess);
+@@ -1007,12 +1008,15 @@
+   static struct vsf_sysutil_statbuf* s_p_statbuf;
+   static struct mystr s_filename;
+   struct mystr* p_filename;
++  struct mystr tmp_filename = INIT_MYSTR;
+   struct vsf_transfer_ret trans_ret;
+   int new_file_fd;
++  int av_orig_file_fd = -1;
+   int remote_fd;
+   int success = 0;
+   int created = 0;
+   int do_truncate = 0;
++  int do_av = 0;
+   filesize_t offset = p_sess->restart_pos;
+   p_sess->restart_pos = 0;
+   if (!data_transfer_checks_ok(p_sess))
+@@ -1026,6 +1030,7 @@
+     get_unique_filename(&s_filename, p_filename);
+     p_filename = &s_filename;
+   }
++
+   vsf_log_start_entry(p_sess, kVSFLogEntryUpload);
+   str_copy(&p_sess->log_str, &p_sess->ftp_arg_str);
+   prepend_path_to_filename(&p_sess->log_str);
+@@ -1057,6 +1062,24 @@
+     return;
+   }
+   created = 1;
++
++  if (av_will_scan(str_getbuf(p_filename))) {
++	do_av = 1;
++	str_copy(&tmp_filename, p_filename);
++	str_append_text(&tmp_filename, ".XXXXXX");
++	av_orig_file_fd = new_file_fd;
++	/* FIXME: various permissions issues... ex. writable file in non-writable directory */
++	new_file_fd = mkstemp(str_getbuf(&tmp_filename));
++	if (vsf_sysutil_retval_is_error(new_file_fd))
++	{
++	  vsf_sysutil_close(av_orig_file_fd);
++	  vsf_cmdio_write(p_sess, FTP_UPLOADFAIL, "Could not create temp file.");
++	  return;
++	}
++	/* mkstemp creates file with 0600 */
++	vsf_sysutil_fchmod(new_file_fd, 0666 &(~vsf_sysutil_get_umask()));
++  }
++
+   vsf_sysutil_fstat(new_file_fd, &s_p_statbuf);
+   if (vsf_sysutil_statbuf_is_regfile(s_p_statbuf))
+   {
+@@ -1082,6 +1105,8 @@
+   if (tunable_lock_upload_files)
+   {
+     vsf_sysutil_lock_file_write(new_file_fd);
++	if (do_av)
++		vsf_sysutil_lock_file_write(av_orig_file_fd);
+   }
+   /* Must truncate the file AFTER locking it! */
+   if (do_truncate)
+@@ -1089,6 +1114,22 @@
+     vsf_sysutil_ftruncate(new_file_fd);
+     vsf_sysutil_lseek_to(new_file_fd, 0);
+   }
++  if (do_av && (is_append || offset != 0)) {
++	char buf[4096];
++	int count;
++
++	/* copy original file */
++	vsf_sysutil_lseek_to(av_orig_file_fd, 0);
++	while ((count=vsf_sysutil_read(av_orig_file_fd, buf, 4096)) > 0) {
++	  if (vsf_sysutil_write_loop(new_file_fd, buf, count) < 0) {
++		vsf_cmdio_write(p_sess, FTP_UPLOADFAIL, "Could not copy temp file.");
++		vsf_sysutil_close(new_file_fd);
++		vsf_sysutil_close(av_orig_file_fd);
++		vsf_sysutil_unlink(str_getbuf(&tmp_filename));
++		return;
++	  }
++	}
++  }
+   if (!is_append && offset != 0)
+   {
+     /* XXX - warning, allows seek past end of file! Check for seek > size? */
+@@ -1112,6 +1153,7 @@
+   }
+   if (vsf_sysutil_retval_is_error(remote_fd))
+   {
++	vsf_sysutil_unlink(str_getbuf(&tmp_filename));
+     goto port_pasv_cleanup_out;
+   }
+   if (tunable_ascii_upload_enable && p_sess->is_ascii)
+@@ -1132,7 +1174,6 @@
+   if (trans_ret.retval == 0)
+   {
+     success = 1;
+-    vsf_log_do_log(p_sess, 1);
+   }
+   if (trans_ret.retval == -1)
+   {
+@@ -1144,7 +1185,43 @@
+   }
+   else
+   {
+-    vsf_cmdio_write(p_sess, FTP_TRANSFEROK, "File receive OK.");
++	if (do_av) {
++	  struct mystr virname = INIT_MYSTR;
++	  struct mystr resp_str = INIT_MYSTR;
++
++	  switch (av_scan_file(p_sess, &tmp_filename, &virname)) {
++		case 1:
++		  str_alloc_text(&resp_str, "Virus found: ");
++		  str_append_str(&resp_str, &virname);
++		  vsf_log_line(p_sess, kVSFLogEntryUpload, &resp_str);
++		  vsf_cmdio_write(p_sess, FTP_UPLOADFAIL, str_getbuf(&resp_str));
++		  str_free(&resp_str);
++
++		  str_unlink(&tmp_filename);
++		  break;
++		case 2:
++		  vsf_cmdio_write(p_sess, FTP_BADSENDFILE, "Failure scanning file.");
++		  str_unlink(&tmp_filename);
++		  break;
++		default:
++		  /* FIXME: race condition */
++		  if (vsf_sysutil_rename(str_getbuf(&tmp_filename), str_getbuf(p_filename)) < 0) {
++			vsf_cmdio_write(p_sess, FTP_BADSENDFILE, "Failure writing to local file .");
++			str_unlink(&tmp_filename);
++		  } 
++		  else 
++		  {
++			vsf_log_do_log(p_sess, 1);
++			vsf_cmdio_write(p_sess, FTP_TRANSFEROK, "File receive OK.");
++		  }
++		  break;
++	  }
++	} 
++	else 
++	{
++	  vsf_log_do_log(p_sess, 1);
++	  vsf_cmdio_write(p_sess, FTP_TRANSFEROK, "File receive OK.");
++	}
+   }
+   check_abor(p_sess);
+ port_pasv_cleanup_out:
+@@ -1152,9 +1229,15 @@
+   pasv_cleanup(p_sess);
+   if (tunable_delete_failed_uploads && created && !success)
+   {
+-    str_unlink(p_filename);
++	if (do_av) {
++	  str_unlink(&tmp_filename);
++	} else {
++	  str_unlink(p_filename);
++	}
+   }
+   vsf_sysutil_close(new_file_fd);
++  if (do_av)
++	vsf_sysutil_close(av_orig_file_fd);
+ }
+ 
+ static void
+@@ -1931,3 +2014,5 @@
+ {
+   vsf_cmdio_write(p_sess, FTP_LOGINOK, "Already logged in.");
+ }
++
++// vim: sw=2:
+diff -Nru vsftpd-2.1.0.orig/secutil.c vsftpd-2.1.0/secutil.c
+--- vsftpd-2.1.0.orig/secutil.c	2008-02-02 02:30:40.000000000 +0100
++++ vsftpd-2.1.0/secutil.c	2009-05-08 19:32:07.000000000 +0200
+@@ -34,6 +34,7 @@
+     if (p_dir_str == 0 || str_isempty(p_dir_str))
+     {
+       str_alloc_text(&dir_str, vsf_sysutil_user_get_homedir(p_user));
++	  str_copy(p_dir_str, &dir_str);
+     }
+     else
+     {
+diff -Nru vsftpd-2.1.0.orig/session.h vsftpd-2.1.0/session.h
+--- vsftpd-2.1.0.orig/session.h	2008-02-12 03:39:38.000000000 +0100
++++ vsftpd-2.1.0/session.h	2009-05-08 19:32:07.000000000 +0200
+@@ -93,6 +93,10 @@
+   int ssl_slave_fd;
+   int ssl_consumer_fd;
+   unsigned int login_fails;
++
++  /* data for av scanner */
++  int clamd_sock;
++  struct mystr chroot_str;
+ };
+ 
+ #endif /* VSF_SESSION_H */
+diff -Nru vsftpd-2.1.0.orig/tunables.c vsftpd-2.1.0/tunables.c
+--- vsftpd-2.1.0.orig/tunables.c	2008-12-18 02:42:45.000000000 +0100
++++ vsftpd-2.1.0/tunables.c	2009-05-08 19:32:07.000000000 +0200
+@@ -83,6 +83,8 @@
+ int tunable_sandbox;
+ int tunable_require_ssl_reuse;
+ 
++int tunable_av_enable;
++
+ unsigned int tunable_accept_timeout;
+ unsigned int tunable_connect_timeout;
+ unsigned int tunable_local_umask;
+@@ -103,6 +105,7 @@
+ unsigned int tunable_delay_successful_login;
+ unsigned int tunable_max_login_fails;
+ unsigned int tunable_chown_upload_mode;
++unsigned int tunable_av_clamd_port;
+ 
+ const char* tunable_secure_chroot_dir;
+ const char* tunable_ftp_username;
+@@ -137,6 +140,11 @@
+ const char* tunable_dsa_private_key_file;
+ const char* tunable_ca_certs_file;
+ 
++const char* tunable_av_clamd_socket;
++const char* tunable_av_clamd_host;
++const char* tunable_av_include_files;
++const char* tunable_av_exclude_files;
++
+ static void install_str_setting(const char* p_value, const char** p_storage);
+ 
+ void
+@@ -216,6 +224,7 @@
+   tunable_implicit_ssl = 0;
+   tunable_sandbox = 0;
+   tunable_require_ssl_reuse = 1;
++  tunable_av_enable = 0;
+ 
+   tunable_accept_timeout = 60;
+   tunable_connect_timeout = 60;
+@@ -241,6 +250,7 @@
+   tunable_max_login_fails = 3;
+   /* -rw------- */
+   tunable_chown_upload_mode = 0600;
++  tunable_av_clamd_port = 3310;
+ 
+   install_str_setting("/usr/share/empty", &tunable_secure_chroot_dir);
+   install_str_setting("ftp", &tunable_ftp_username);
+@@ -276,6 +286,11 @@
+   install_str_setting(0, &tunable_rsa_private_key_file);
+   install_str_setting(0, &tunable_dsa_private_key_file);
+   install_str_setting(0, &tunable_ca_certs_file);
++
++  install_str_setting(0, &tunable_av_clamd_socket);
++  install_str_setting("127.0.0.1", &tunable_av_clamd_host);
++  install_str_setting(0, &tunable_av_include_files);
++  install_str_setting(0, &tunable_av_exclude_files);
+ }
+ 
+ void
+diff -Nru vsftpd-2.1.0.orig/tunables.h vsftpd-2.1.0/tunables.h
+--- vsftpd-2.1.0.orig/tunables.h	2008-12-17 06:47:11.000000000 +0100
++++ vsftpd-2.1.0/tunables.h	2009-05-08 19:32:07.000000000 +0200
+@@ -83,6 +83,7 @@
+ extern int tunable_implicit_ssl;              /* Use implicit SSL protocol */
+ extern int tunable_sandbox;                   /* Deploy ptrace sandbox */
+ extern int tunable_require_ssl_reuse;         /* Require re-used data conn */
++extern int tunable_av_enable;                 /* Scan av incomming files */
+ 
+ /* Integer/numeric defines */
+ extern unsigned int tunable_accept_timeout;
+@@ -105,6 +106,7 @@
+ extern unsigned int tunable_delay_successful_login;
+ extern unsigned int tunable_max_login_fails;
+ extern unsigned int tunable_chown_upload_mode;
++extern unsigned int tunable_av_clamd_port;
+ 
+ /* String defines */
+ extern const char* tunable_secure_chroot_dir;
+@@ -139,6 +141,10 @@
+ extern const char* tunable_dsa_private_key_file;
+ extern const char* tunable_ca_certs_file;
+ extern const char* tunable_cmds_denied;
++extern const char* tunable_av_clamd_socket;
++extern const char* tunable_av_clamd_host;
++extern const char* tunable_av_include_files;
++extern const char* tunable_av_exclude_files;
+ 
+ #endif /* VSF_TUNABLES_H */
+ 
+diff -Nru vsftpd-2.1.0.orig/twoprocess.c vsftpd-2.1.0/twoprocess.c
+--- vsftpd-2.1.0.orig/twoprocess.c	2009-01-15 02:03:04.000000000 +0100
++++ vsftpd-2.1.0/twoprocess.c	2009-05-08 19:32:07.000000000 +0200
+@@ -356,6 +356,13 @@
+                         p_user_str, p_orig_user_str);
+     vsf_secutil_change_credentials(p_user_str, &userdir_str, &chroot_str,
+                                    0, secutil_option);
++
++	if (do_chroot) {
++		str_copy(&p_sess->chroot_str, &userdir_str);
++	} else {
++		str_empty(&p_sess->chroot_str);
++	}
++
+     if (!str_isempty(&chdir_str))
+     {
+       (void) str_chdir(&chdir_str);
+diff -Nru vsftpd-2.1.0.orig/vsftpd.conf.5 vsftpd-2.1.0/vsftpd.conf.5
+--- vsftpd-2.1.0.orig/vsftpd.conf.5	2008-12-18 02:44:21.000000000 +0100
++++ vsftpd-2.1.0/vsftpd.conf.5	2009-05-08 19:42:35.000000000 +0200
+@@ -105,6 +105,11 @@
+ 
+ Default: NO
+ .TP
++.B av_enable
++If enabled, all uploaded files are scanned with clamav (through clamd).
++
++Default: NO
++.TP
+ .B background
+ When enabled, and vsftpd is started in "listen" mode, vsftpd will background
+ the listener process. i.e. control will immediately be returned to the shell
+@@ -640,6 +645,11 @@
+ 
+ Default: 077
+ .TP
++.B av_clamd_port
++Port number where clamd listen on.
++
++Default: 3310
++.TP
+ .B chown_upload_mode
+ The file mode to force for chown()ed anonymous uploads. (Added in v2.0.6).
+ 
+@@ -755,6 +765,18 @@
+ 
+ Default: (none)
+ .TP
++.B av_clamd_host
++IP where clamd listen. It must be on the same host (or have access to same
++filesystem).
++
++Default: 127.0.0.1
++.TP
++.B av_clamd_socket
++UNIX socket of clamd. Warning: When using chroot you should use TCP instead of
++UNIX socket.
++
++Default: (none)
++.TP
+ .B banned_email_file
+ This option is the name of a file containing a list of anonymous e-mail
+ passwords which are not permitted. This file is consulted if the option
