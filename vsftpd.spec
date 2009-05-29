@@ -22,6 +22,7 @@ Source5:	%{name}.init
 Patch0:		%{name}-builddefs.patch
 Patch1:		%{name}-amd64-findlibs.patch
 Patch2:		%{name}-clamav.patch
+Patch3:		%{name}-include.patch
 URL:		http://vsftpd.beasts.org/
 BuildRequires:	libcap-devel
 BuildRequires:	libwrap-devel
@@ -85,6 +86,7 @@ Ten pakiet pozwala na wystartowanie vsftpd jako samodzielnego demona.
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch3 -p1
 %if %{with clamav}
 #%patch2 -p1 - needs update
 %endif
