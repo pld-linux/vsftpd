@@ -7,12 +7,12 @@ Summary:	vsftpd - Very Secure FTP Daemon
 Summary(pl.UTF-8):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR.UTF-8):	vsftpd - Daemon FTP Muito Seguro
 Name:		vsftpd
-Version:	2.1.1
+Version:	2.1.2
 Release:	1
 License:	GPL v2
 Group:		Daemons
 Source0:	ftp://vsftpd.beasts.org/users/cevans/%{name}-%{version}.tar.gz
-# Source0-md5:	b1fab0e6212738f9f3572e067c419778
+# Source0-md5:	6a8c8579d50adf0d0fc07226c03bfb52
 Source1:	%{name}.inetd
 Source2:	%{name}.pamd
 Source3:	%{name}-ftpusers
@@ -22,7 +22,6 @@ Source5:	%{name}.init
 Patch0:		%{name}-builddefs.patch
 Patch1:		%{name}-amd64-findlibs.patch
 Patch2:		%{name}-clamav.patch
-Patch3:		%{name}-include.patch
 URL:		http://vsftpd.beasts.org/
 BuildRequires:	libcap-devel
 BuildRequires:	libwrap-devel
@@ -86,7 +85,6 @@ Ten pakiet pozwala na wystartowanie vsftpd jako samodzielnego demona.
 %setup -q
 %patch0 -p1
 %patch1 -p1
-%patch3 -p1
 %if %{with clamav}
 #%patch2 -p1 - needs update
 %endif
