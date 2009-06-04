@@ -5,9 +5,9 @@ effects: when uploaded *new* file was infected, 0-size file left.
 
 Written by Marek Marczykowski <m.marczykowski@fiok.pl>
 
-diff -Nru vsftpd-2.1.0.orig/Makefile vsftpd-2.1.0/Makefile
---- vsftpd-2.1.0.orig/Makefile	2009-02-18 23:28:05.000000000 +0100
-+++ vsftpd-2.1.0/Makefile	2009-05-08 19:32:07.000000000 +0200
+diff -Naur vsftpd-2.1.2.orig/Makefile vsftpd-2.1.2/Makefile
+--- vsftpd-2.1.2.orig/Makefile	2009-05-22 21:44:52.000000000 +0200
++++ vsftpd-2.1.2/Makefile	2009-06-04 10:55:40.000000000 +0200
 @@ -14,7 +14,7 @@
      banner.o filestr.o parseconf.o secutil.o \
      ascii.o oneprocess.o twoprocess.o privops.o standalone.o hash.o \
@@ -17,9 +17,9 @@ diff -Nru vsftpd-2.1.0.orig/Makefile vsftpd-2.1.0/Makefile
  
  
  .c.o:
-diff -Nru vsftpd-2.1.0.orig/clamav.c vsftpd-2.1.0/clamav.c
---- vsftpd-2.1.0.orig/clamav.c	1970-01-01 01:00:00.000000000 +0100
-+++ vsftpd-2.1.0/clamav.c	2009-05-08 19:32:07.000000000 +0200
+diff -Naur vsftpd-2.1.2.orig/clamav.c vsftpd-2.1.2/clamav.c
+--- vsftpd-2.1.2.orig/clamav.c	1970-01-01 01:00:00.000000000 +0100
++++ vsftpd-2.1.2/clamav.c	2009-06-04 10:55:40.000000000 +0200
 @@ -0,0 +1,221 @@
 +#include <sys/types.h>
 +#include <regex.h>
@@ -242,9 +242,9 @@ diff -Nru vsftpd-2.1.0.orig/clamav.c vsftpd-2.1.0/clamav.c
 +
 +
 +
-diff -Nru vsftpd-2.1.0.orig/clamav.h vsftpd-2.1.0/clamav.h
---- vsftpd-2.1.0.orig/clamav.h	1970-01-01 01:00:00.000000000 +0100
-+++ vsftpd-2.1.0/clamav.h	2009-05-08 19:32:07.000000000 +0200
+diff -Naur vsftpd-2.1.2.orig/clamav.h vsftpd-2.1.2/clamav.h
+--- vsftpd-2.1.2.orig/clamav.h	1970-01-01 01:00:00.000000000 +0100
++++ vsftpd-2.1.2/clamav.h	2009-06-04 10:55:40.000000000 +0200
 @@ -0,0 +1,12 @@
 +#ifndef _CLAMAV_H
 +#define _CLAMAV_H
@@ -258,10 +258,10 @@ diff -Nru vsftpd-2.1.0.orig/clamav.h vsftpd-2.1.0/clamav.h
 +extern int av_scan_file(struct vsf_session* p_sess, struct mystr *filename, struct mystr *virname);
 +
 +#endif
-diff -Nru vsftpd-2.1.0.orig/main.c vsftpd-2.1.0/main.c
---- vsftpd-2.1.0.orig/main.c	2009-01-07 22:50:42.000000000 +0100
-+++ vsftpd-2.1.0/main.c	2009-05-08 19:32:07.000000000 +0200
-@@ -65,7 +65,9 @@
+diff -Naur vsftpd-2.1.2.orig/main.c vsftpd-2.1.2/main.c
+--- vsftpd-2.1.2.orig/main.c	2009-05-21 22:36:28.000000000 +0200
++++ vsftpd-2.1.2/main.c	2009-06-04 10:55:40.000000000 +0200
+@@ -64,7 +64,9 @@
      /* Secure connection state */
      0, 0, 0, 0, 0, INIT_MYSTR, 0, -1, -1,
      /* Login fails */
@@ -272,18 +272,18 @@ diff -Nru vsftpd-2.1.0.orig/main.c vsftpd-2.1.0/main.c
    };
    int config_specified = 0;
    const char* p_config_name = VSFTP_DEFAULT_CONFIG;
-diff -Nru vsftpd-2.1.0.orig/parseconf.c vsftpd-2.1.0/parseconf.c
---- vsftpd-2.1.0.orig/parseconf.c	2008-12-18 07:21:41.000000000 +0100
-+++ vsftpd-2.1.0/parseconf.c	2009-05-08 19:32:07.000000000 +0200
-@@ -106,6 +106,7 @@
+diff -Naur vsftpd-2.1.2.orig/parseconf.c vsftpd-2.1.2/parseconf.c
+--- vsftpd-2.1.2.orig/parseconf.c	2009-05-27 17:36:45.000000000 +0200
++++ vsftpd-2.1.2/parseconf.c	2009-06-04 10:56:58.000000000 +0200
+@@ -105,6 +105,7 @@
+   { "delete_failed_uploads", &tunable_delete_failed_uploads },
    { "implicit_ssl", &tunable_implicit_ssl },
    { "sandbox", &tunable_sandbox },
-   { "require_ssl_reuse", &tunable_require_ssl_reuse },
 +  { "av_enable", &tunable_av_enable },
+   { "require_ssl_reuse", &tunable_require_ssl_reuse },
+   { "isolate", &tunable_isolate },
    { 0, 0 }
- };
- 
-@@ -136,6 +137,7 @@
+@@ -137,6 +138,7 @@
    { "delay_successful_login", &tunable_delay_successful_login },
    { "max_login_fails", &tunable_max_login_fails },
    { "chown_upload_mode", &tunable_chown_upload_mode },
@@ -291,7 +291,7 @@ diff -Nru vsftpd-2.1.0.orig/parseconf.c vsftpd-2.1.0/parseconf.c
    { 0, 0 }
  };
  
-@@ -178,6 +180,10 @@
+@@ -179,6 +181,10 @@
    { "dsa_private_key_file", &tunable_dsa_private_key_file },
    { "ca_certs_file", &tunable_ca_certs_file },
    { "cmds_denied", &tunable_cmds_denied },
@@ -302,9 +302,9 @@ diff -Nru vsftpd-2.1.0.orig/parseconf.c vsftpd-2.1.0/parseconf.c
    { 0, 0 }
  };
  
-diff -Nru vsftpd-2.1.0.orig/postlogin.c vsftpd-2.1.0/postlogin.c
---- vsftpd-2.1.0.orig/postlogin.c	2008-12-19 05:20:48.000000000 +0100
-+++ vsftpd-2.1.0/postlogin.c	2009-05-08 19:32:07.000000000 +0200
+diff -Naur vsftpd-2.1.2.orig/postlogin.c vsftpd-2.1.2/postlogin.c
+--- vsftpd-2.1.2.orig/postlogin.c	2008-12-19 05:20:48.000000000 +0100
++++ vsftpd-2.1.2/postlogin.c	2009-06-04 10:55:40.000000000 +0200
 @@ -27,6 +27,7 @@
  #include "ssl.h"
  #include "vsftpver.h"
@@ -478,9 +478,9 @@ diff -Nru vsftpd-2.1.0.orig/postlogin.c vsftpd-2.1.0/postlogin.c
  }
 +
 +// vim: sw=2:
-diff -Nru vsftpd-2.1.0.orig/secutil.c vsftpd-2.1.0/secutil.c
---- vsftpd-2.1.0.orig/secutil.c	2008-02-02 02:30:40.000000000 +0100
-+++ vsftpd-2.1.0/secutil.c	2009-05-08 19:32:07.000000000 +0200
+diff -Naur vsftpd-2.1.2.orig/secutil.c vsftpd-2.1.2/secutil.c
+--- vsftpd-2.1.2.orig/secutil.c	2009-05-27 08:20:36.000000000 +0200
++++ vsftpd-2.1.2/secutil.c	2009-06-04 10:55:40.000000000 +0200
 @@ -34,6 +34,7 @@
      if (p_dir_str == 0 || str_isempty(p_dir_str))
      {
@@ -489,9 +489,9 @@ diff -Nru vsftpd-2.1.0.orig/secutil.c vsftpd-2.1.0/secutil.c
      }
      else
      {
-diff -Nru vsftpd-2.1.0.orig/session.h vsftpd-2.1.0/session.h
---- vsftpd-2.1.0.orig/session.h	2008-02-12 03:39:38.000000000 +0100
-+++ vsftpd-2.1.0/session.h	2009-05-08 19:32:07.000000000 +0200
+diff -Naur vsftpd-2.1.2.orig/session.h vsftpd-2.1.2/session.h
+--- vsftpd-2.1.2.orig/session.h	2008-02-12 03:39:38.000000000 +0100
++++ vsftpd-2.1.2/session.h	2009-06-04 10:55:40.000000000 +0200
 @@ -93,6 +93,10 @@
    int ssl_slave_fd;
    int ssl_consumer_fd;
@@ -503,19 +503,19 @@ diff -Nru vsftpd-2.1.0.orig/session.h vsftpd-2.1.0/session.h
  };
  
  #endif /* VSF_SESSION_H */
-diff -Nru vsftpd-2.1.0.orig/tunables.c vsftpd-2.1.0/tunables.c
---- vsftpd-2.1.0.orig/tunables.c	2008-12-18 02:42:45.000000000 +0100
-+++ vsftpd-2.1.0/tunables.c	2009-05-08 19:32:07.000000000 +0200
-@@ -83,6 +83,8 @@
- int tunable_sandbox;
+diff -Naur vsftpd-2.1.2.orig/tunables.c vsftpd-2.1.2/tunables.c
+--- vsftpd-2.1.2.orig/tunables.c	2009-05-27 17:33:58.000000000 +0200
++++ vsftpd-2.1.2/tunables.c	2009-06-04 10:57:17.000000000 +0200
+@@ -84,6 +84,8 @@
  int tunable_require_ssl_reuse;
+ int tunable_isolate;
  
 +int tunable_av_enable;
 +
  unsigned int tunable_accept_timeout;
  unsigned int tunable_connect_timeout;
  unsigned int tunable_local_umask;
-@@ -103,6 +105,7 @@
+@@ -104,6 +106,7 @@
  unsigned int tunable_delay_successful_login;
  unsigned int tunable_max_login_fails;
  unsigned int tunable_chown_upload_mode;
@@ -523,7 +523,7 @@ diff -Nru vsftpd-2.1.0.orig/tunables.c vsftpd-2.1.0/tunables.c
  
  const char* tunable_secure_chroot_dir;
  const char* tunable_ftp_username;
-@@ -137,6 +140,11 @@
+@@ -138,6 +141,11 @@
  const char* tunable_dsa_private_key_file;
  const char* tunable_ca_certs_file;
  
@@ -535,15 +535,15 @@ diff -Nru vsftpd-2.1.0.orig/tunables.c vsftpd-2.1.0/tunables.c
  static void install_str_setting(const char* p_value, const char** p_storage);
  
  void
-@@ -216,6 +224,7 @@
+@@ -217,6 +225,7 @@
    tunable_implicit_ssl = 0;
    tunable_sandbox = 0;
    tunable_require_ssl_reuse = 1;
 +  tunable_av_enable = 0;
+   tunable_isolate = 1;
  
    tunable_accept_timeout = 60;
-   tunable_connect_timeout = 60;
-@@ -241,6 +250,7 @@
+@@ -243,6 +252,7 @@
    tunable_max_login_fails = 3;
    /* -rw------- */
    tunable_chown_upload_mode = 0600;
@@ -551,7 +551,7 @@ diff -Nru vsftpd-2.1.0.orig/tunables.c vsftpd-2.1.0/tunables.c
  
    install_str_setting("/usr/share/empty", &tunable_secure_chroot_dir);
    install_str_setting("ftp", &tunable_ftp_username);
-@@ -276,6 +286,11 @@
+@@ -278,6 +288,11 @@
    install_str_setting(0, &tunable_rsa_private_key_file);
    install_str_setting(0, &tunable_dsa_private_key_file);
    install_str_setting(0, &tunable_ca_certs_file);
@@ -563,18 +563,18 @@ diff -Nru vsftpd-2.1.0.orig/tunables.c vsftpd-2.1.0/tunables.c
  }
  
  void
-diff -Nru vsftpd-2.1.0.orig/tunables.h vsftpd-2.1.0/tunables.h
---- vsftpd-2.1.0.orig/tunables.h	2008-12-17 06:47:11.000000000 +0100
-+++ vsftpd-2.1.0/tunables.h	2009-05-08 19:32:07.000000000 +0200
+diff -Naur vsftpd-2.1.2.orig/tunables.h vsftpd-2.1.2/tunables.h
+--- vsftpd-2.1.2.orig/tunables.h	2009-05-27 17:33:35.000000000 +0200
++++ vsftpd-2.1.2/tunables.h	2009-06-04 10:57:37.000000000 +0200
 @@ -83,6 +83,7 @@
  extern int tunable_implicit_ssl;              /* Use implicit SSL protocol */
  extern int tunable_sandbox;                   /* Deploy ptrace sandbox */
  extern int tunable_require_ssl_reuse;         /* Require re-used data conn */
 +extern int tunable_av_enable;                 /* Scan av incomming files */
+ extern int tunable_isolate;                   /* Use container clone() flags */
  
  /* Integer/numeric defines */
- extern unsigned int tunable_accept_timeout;
-@@ -105,6 +106,7 @@
+@@ -106,6 +107,7 @@
  extern unsigned int tunable_delay_successful_login;
  extern unsigned int tunable_max_login_fails;
  extern unsigned int tunable_chown_upload_mode;
@@ -582,7 +582,7 @@ diff -Nru vsftpd-2.1.0.orig/tunables.h vsftpd-2.1.0/tunables.h
  
  /* String defines */
  extern const char* tunable_secure_chroot_dir;
-@@ -139,6 +141,10 @@
+@@ -140,6 +142,10 @@
  extern const char* tunable_dsa_private_key_file;
  extern const char* tunable_ca_certs_file;
  extern const char* tunable_cmds_denied;
@@ -593,10 +593,10 @@ diff -Nru vsftpd-2.1.0.orig/tunables.h vsftpd-2.1.0/tunables.h
  
  #endif /* VSF_TUNABLES_H */
  
-diff -Nru vsftpd-2.1.0.orig/twoprocess.c vsftpd-2.1.0/twoprocess.c
---- vsftpd-2.1.0.orig/twoprocess.c	2009-01-15 02:03:04.000000000 +0100
-+++ vsftpd-2.1.0/twoprocess.c	2009-05-08 19:32:07.000000000 +0200
-@@ -356,6 +356,13 @@
+diff -Naur vsftpd-2.1.2.orig/twoprocess.c vsftpd-2.1.2/twoprocess.c
+--- vsftpd-2.1.2.orig/twoprocess.c	2009-05-27 08:18:36.000000000 +0200
++++ vsftpd-2.1.2/twoprocess.c	2009-06-04 10:55:40.000000000 +0200
+@@ -364,6 +364,13 @@
                          p_user_str, p_orig_user_str);
      vsf_secutil_change_credentials(p_user_str, &userdir_str, &chroot_str,
                                     0, secutil_option);
@@ -610,9 +610,9 @@ diff -Nru vsftpd-2.1.0.orig/twoprocess.c vsftpd-2.1.0/twoprocess.c
      if (!str_isempty(&chdir_str))
      {
        (void) str_chdir(&chdir_str);
-diff -Nru vsftpd-2.1.0.orig/vsftpd.conf.5 vsftpd-2.1.0/vsftpd.conf.5
---- vsftpd-2.1.0.orig/vsftpd.conf.5	2008-12-18 02:44:21.000000000 +0100
-+++ vsftpd-2.1.0/vsftpd.conf.5	2009-05-08 19:42:35.000000000 +0200
+diff -Naur vsftpd-2.1.2.orig/vsftpd.conf.5 vsftpd-2.1.2/vsftpd.conf.5
+--- vsftpd-2.1.2.orig/vsftpd.conf.5	2009-05-22 05:24:30.000000000 +0200
++++ vsftpd-2.1.2/vsftpd.conf.5	2009-06-04 10:55:40.000000000 +0200
 @@ -105,6 +105,11 @@
  
  Default: NO
@@ -625,7 +625,7 @@ diff -Nru vsftpd-2.1.0.orig/vsftpd.conf.5 vsftpd-2.1.0/vsftpd.conf.5
  .B background
  When enabled, and vsftpd is started in "listen" mode, vsftpd will background
  the listener process. i.e. control will immediately be returned to the shell
-@@ -640,6 +645,11 @@
+@@ -643,6 +648,11 @@
  
  Default: 077
  .TP
@@ -637,7 +637,7 @@ diff -Nru vsftpd-2.1.0.orig/vsftpd.conf.5 vsftpd-2.1.0/vsftpd.conf.5
  .B chown_upload_mode
  The file mode to force for chown()ed anonymous uploads. (Added in v2.0.6).
  
-@@ -755,6 +765,18 @@
+@@ -758,6 +768,18 @@
  
  Default: (none)
  .TP
