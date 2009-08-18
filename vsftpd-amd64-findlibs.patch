@@ -9,11 +9,3 @@
  else
    locate_library /lib/libcrypt.so && echo "-lcrypt";
    locate_library /usr/lib/libcrypt.so && echo "-lcrypt";
-@@ -48,6 +50,7 @@
- else
-   locate_library /usr/lib/libcap.so && echo "-lcap";
-   locate_library /lib/libcap.so && echo "-lcap";
-+  locate_library /lib64/libcap.so && echo "-lcap";
- fi
- 
- # Solaris needs this for nanosleep()..
