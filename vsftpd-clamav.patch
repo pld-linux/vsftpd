@@ -414,7 +414,7 @@ diff -Naur vsftpd-2.1.2.orig/postlogin.c vsftpd-2.1.2/postlogin.c
    }
    else
    {
--    vsf_cmdio_write(p_sess, FTP_TRANSFEROK, "File receive OK.");
+-    vsf_cmdio_write(p_sess, FTP_TRANSFEROK, "Transfer complete.");
 +	if (do_av) {
 +	  struct mystr virname = INIT_MYSTR;
 +	  struct mystr resp_str = INIT_MYSTR;
