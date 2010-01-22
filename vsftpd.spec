@@ -1,16 +1,19 @@
 #
+# Conditional build:
+%bcond_without	ssl		# build without OpenSSL support
+#
 %define		_ftpdir	/home/services/ftp
 #
 Summary:	vsftpd - Very Secure FTP Daemon
 Summary(pl):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR):	vsftpd - Daemon FTP Muito Seguro
 Name:		vsftpd
-Version:	2.0.5
+Version:	2.1.0
 Release:	2
 License:	GPL v2
 Group:		Daemons
 Source0:	ftp://vsftpd.beasts.org/users/cevans/%{name}-%{version}.tar.gz
-# Source0-md5:	146062e8b2f93af43ff6c2c770feea94
+# Source0-md5:	7890b54e7ffa6106ffbdfda53f47fa41
 Source1:	%{name}.inetd
 Source2:	%{name}.pamd
 Source3:	%{name}-ftpusers
@@ -22,10 +25,10 @@ Patch1:		%{name}-amd64-findlibs.patch
 URL:		http://vsftpd.beasts.org/
 BuildRequires:	libcap-devel
 BuildRequires:	libwrap-devel
-BuildRequires:	openssl-devel >= 0.9.7d
+%{?with_ssl:BuildRequires:	openssl-devel >= 0.9.8j}
 BuildRequires:	rpmbuild(macros) >= 1.268
 Requires:	%{name}-init = %{version}-%{release}
-Requires:	filesystem >= 3.0-11
+Requires:	filesystem >= 2.0-1
 Requires:	pam >= 0.77.3
 Provides:	ftpserver
 Obsoletes:	anonftp
@@ -95,7 +98,7 @@ Ten pakiet pozwala na wystartowanie vsftpd jako samodzielnego demona.
 
 %prep
 %setup -q
-%patch0 -p1
+%{?with_ssl:%patch0 -p1}
 %patch1 -p1
 
 %build
