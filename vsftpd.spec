@@ -1,6 +1,6 @@
 #
 # Conditional build:
-%bcond_without	ssl		# build without OpenSSL support
+%bcond_with		ssl		# build without OpenSSL support
 #
 %define		_ftpdir	/home/services/ftp
 #
@@ -9,7 +9,7 @@ Summary(pl):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR):	vsftpd - Daemon FTP Muito Seguro
 Name:		vsftpd
 Version:	2.1.0
-Release:	2
+Release:	3
 License:	GPL v2
 Group:		Daemons
 Source0:	ftp://vsftpd.beasts.org/users/cevans/%{name}-%{version}.tar.gz
@@ -98,8 +98,12 @@ Ten pakiet pozwala na wystartowanie vsftpd jako samodzielnego demona.
 
 %prep
 %setup -q
-%{?with_ssl:%patch0 -p1}
+%patch0 -p1
 %patch1 -p1
+
+%if %{without ssl}
+sed -i -e 's/#define VSF_BUILD_SSL/#undef VSF_BUILD_SSL/' builddefs.h
+%endif
 
 %build
 %{__make} \
