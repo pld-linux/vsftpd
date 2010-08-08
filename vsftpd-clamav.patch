@@ -535,12 +535,14 @@ diff -Naru vsftpd-2.2.2.orig/tunables.c vsftpd-2.2.2/tunables.c
  static void install_str_setting(const char* p_value, const char** p_storage);
  
  void
-@@ -219,7 +227,8 @@
+@@ -219,9 +227,10 @@
    tunable_sandbox = 0;
    tunable_require_ssl_reuse = 1;
    tunable_isolate = 1;
 -  tunable_isolate_network = 1;
 +  tunable_isolate_network = 0;
+   tunable_ftp_enable = 1;
+   tunable_http_enable = 0;
 +  tunable_av_enable = 0;
  
    tunable_accept_timeout = 60;
