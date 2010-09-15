@@ -1,11 +1,10 @@
---- vsftpd-2.1.0/vsf_findlibs.sh.orig	2008-11-03 01:46:34.000000000 +0100
-+++ vsftpd-2.1.0/vsf_findlibs.sh	2009-02-19 23:04:43.659076603 +0100
-@@ -18,6 +18,8 @@
-   locate_library /usr/lib/libpam.sl && echo "-lpam";
-   # AIX ends shared libraries with .a
-   locate_library /usr/lib/libpam.a && echo "-lpam";
-+  # amd64
-+  locate_library /usr/lib64/libpam.so && echo "-lpam";
- else
-   locate_library /lib/libcrypt.so && echo "-lcrypt";
-   locate_library /usr/lib/libcrypt.so && echo "-lcrypt";
+--- vsftpd-2.3.1/vsf_findlibs.sh~	2009-10-19 04:05:21.000000000 +0200
++++ vsftpd-2.3.1/vsf_findlibs.sh	2010-09-15 10:09:12.543414001 +0200
+@@ -13,7 +13,6 @@
+ # Look for PAM (done weirdly due to distribution bugs (e.g. Debian) or the
+ # crypt library.
+ if find_func pam_start sysdeputil.o; then
+-  locate_library /lib/libpam.so.0 && echo "/lib/libpam.so.0";
+   locate_library /usr/lib/libpam.so && echo "-lpam";
+   locate_library /usr/lib64/libpam.so && echo "-lpam";
+   # HP-UX ends shared libraries with .sl
