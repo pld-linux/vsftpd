@@ -1,5 +1,4 @@
 ### TODO:
-# - fix ssl build on AC
 # - default config does not work with inetd configuration
 #
 %define		_ftpdir	/home/services/ftp
@@ -11,7 +10,7 @@ Summary(pl.UTF-8):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR.UTF-8):	vsftpd - Daemon FTP Muito Seguro
 Name:		vsftpd
 Version:	2.3.2
-Release:	1
+Release:	2
 License:	GPL v2
 Group:		Daemons
 Source0:	ftp://vsftpd.beasts.org/users/cevans/%{name}-%{version}.tar.gz
@@ -25,10 +24,15 @@ Source5:	%{name}.init
 Patch0:		%{name}-builddefs.patch
 Patch1:		%{name}-amd64-findlibs.patch
 Patch2:		%{name}-clamav.patch
+Patch3:		%{name}-switch_sha256_to_sha1.patch
 URL:		http://vsftpd.beasts.org/
 BuildRequires:	libcap-devel
 BuildRequires:	libwrap-devel
+%if "%{pld_release}" == "ac"
+BuildRequires:	openssl-devel >= 0.9.7d
+%else
 BuildRequires:	openssl-devel >= 0.9.8
+%endif
 BuildRequires:	rpmbuild(macros) >= 1.268
 Requires:	%{name}-init = %{version}-%{release}
 Requires:	filesystem >= 3.0-11
@@ -90,6 +94,9 @@ Ten pakiet pozwala na wystartowanie vsftpd jako samodzielnego demona.
 %patch1 -p1
 %if %{with clamav}
 %patch2 -p1
+%endif
+%if "%{pld_release}" == "ac"
+%patch3 -p1
 %endif
 
 %build
