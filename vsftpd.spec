@@ -1,3 +1,6 @@
+### TODO:
+# - fix ssl build on AC
+# - default config does not work with inetd configuration
 #
 %define		_ftpdir	/home/services/ftp
 #
@@ -25,7 +28,7 @@ Patch2:		%{name}-clamav.patch
 URL:		http://vsftpd.beasts.org/
 BuildRequires:	libcap-devel
 BuildRequires:	libwrap-devel
-BuildRequires:	openssl-devel >= 0.9.7d
+BuildRequires:	openssl-devel >= 0.9.8
 BuildRequires:	rpmbuild(macros) >= 1.268
 Requires:	%{name}-init = %{version}-%{release}
 Requires:	filesystem >= 3.0-11
