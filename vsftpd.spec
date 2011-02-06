@@ -1,10 +1,10 @@
-### TODO:
+# TODO:
 # - default config does not work with inetd configuration
 #
-%define		_ftpdir	/home/services/ftp
-#
+# Conditional build:
 %bcond_with	clamav	#ClamAV scanning support
 
+%define		_ftpdir	/home/services/ftp
 Summary:	vsftpd - Very Secure FTP Daemon
 Summary(pl.UTF-8):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR.UTF-8):	vsftpd - Daemon FTP Muito Seguro
