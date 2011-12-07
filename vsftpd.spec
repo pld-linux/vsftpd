@@ -2,7 +2,7 @@
 # - default config does not work with inetd configuration
 #
 # Conditional build:
-%bcond_with	clamav	#ClamAV scanning support
+%bcond_with	clamav	# ClamAV scanning support
 
 %define		_ftpdir	/home/services/ftp
 Summary:	vsftpd - Very Secure FTP Daemon
@@ -13,7 +13,7 @@ Version:	2.3.4
 Release:	1
 License:	GPL v2
 Group:		Daemons
-Source0:	ftp://vsftpd.beasts.org/users/cevans/%{name}-%{version}.tar.gz
+Source0:	https://security.appspot.com/downloads/%{name}-%{version}.tar.gz
 # Source0-md5:	2ea5d19978710527bb7444d93b67767a
 Source1:	%{name}.inetd
 Source2:	%{name}.pamd
@@ -25,7 +25,7 @@ Patch0:		%{name}-builddefs.patch
 Patch1:		%{name}-amd64-findlibs.patch
 Patch2:		%{name}-clamav.patch
 Patch3:		%{name}-switch_sha256_to_sha1.patch
-URL:		http://vsftpd.beasts.org/
+URL:		https://security.appspot.com/vsftpd.html
 BuildRequires:	libcap-devel
 BuildRequires:	libwrap-devel
 %if "%{pld_release}" == "ac"
@@ -111,21 +111,21 @@ install -d $RPM_BUILD_ROOT{%{_sbindir},%{_mandir}/man{5,8}} \
 	$RPM_BUILD_ROOT/etc/{pam.d,sysconfig/rc-inetd,logrotate.d,ftpd,rc.d/init.d} \
 	$RPM_BUILD_ROOT{%{_ftpdir}/pub/incoming,/var/log}
 
-install vsftpd $RPM_BUILD_ROOT%{_sbindir}/vsftpd
-install vsftpd.conf $RPM_BUILD_ROOT%{_sysconfdir}/vsftpd.conf
-install vsftpd.conf.5 $RPM_BUILD_ROOT%{_mandir}/man5/vsftpd.conf.5
-install vsftpd.8 $RPM_BUILD_ROOT%{_mandir}/man8/vsftpd.8
-install RedHat/vsftpd.log $RPM_BUILD_ROOT/etc/logrotate.d/vsftpd
+install -p vsftpd $RPM_BUILD_ROOT%{_sbindir}/vsftpd
+cp -p vsftpd.conf $RPM_BUILD_ROOT%{_sysconfdir}/vsftpd.conf
+cp -p vsftpd.conf.5 $RPM_BUILD_ROOT%{_mandir}/man5/vsftpd.conf.5
+cp -p vsftpd.8 $RPM_BUILD_ROOT%{_mandir}/man8/vsftpd.8
+cp -p RedHat/vsftpd.log $RPM_BUILD_ROOT/etc/logrotate.d/vsftpd
 
-install %{SOURCE1} $RPM_BUILD_ROOT/etc/sysconfig/rc-inetd/vsftpd
-install %{SOURCE2} $RPM_BUILD_ROOT/etc/pam.d/ftp
-install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/ftpd/ftpusers
-install %{SOURCE5} $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/vsftpd
+install -p %{SOURCE1} $RPM_BUILD_ROOT/etc/sysconfig/rc-inetd/vsftpd
+cp -p %{SOURCE2} $RPM_BUILD_ROOT/etc/pam.d/ftp
+cp -p %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/ftpd/ftpusers
+install -p %{SOURCE5} $RPM_BUILD_ROOT/etc/rc.d/init.d/vsftpd
 
 > $RPM_BUILD_ROOT/var/log/vsftpd.log
 
 bzip2 -dc %{SOURCE4} | tar xf - -C $RPM_BUILD_ROOT%{_mandir}
-rm -f $RPM_BUILD_ROOT/usr/share/man/ftpusers-path.diff
+%{__rm} $RPM_BUILD_ROOT%{_mandir}/ftpusers-path.diff
 
 %clean
 rm -rf $RPM_BUILD_ROOT
