@@ -6,4 +6,5 @@ FLAGS=nowait
 USER=root
 SERVER=tcpd
 DAEMON=/usr/sbin/vsftpd
+DAEMONARGS="-olisten=NO"
 NICE=10
