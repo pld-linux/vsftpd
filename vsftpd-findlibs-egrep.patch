@@ -1,0 +1,11 @@
+--- vsftpd-3.0.2/vsf_findlibs.sh.orig	2014-04-11 12:18:03.231578533 +0200
++++ vsftpd-3.0.2/vsf_findlibs.sh	2014-04-11 12:19:03.988273239 +0200
+@@ -2,7 +2,7 @@
+ # Cheesy hacky location of additional link libraries.
+ 
+ locate_library() { [ ! "$1*" = "`echo $1*`" ]; }
+-find_func() { egrep $1 $2 >/dev/null; }
++find_func() { egrep -qa $1 $2; }
+ 
+ if find_func hosts_access tcpwrap.o; then
+   echo "-lwrap";
