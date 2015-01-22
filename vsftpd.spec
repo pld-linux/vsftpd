@@ -10,7 +10,7 @@ Summary(pl.UTF-8):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR.UTF-8):	vsftpd - Daemon FTP Muito Seguro
 Name:		vsftpd
 Version:	3.0.2
-Release:	2
+Release:	3
 License:	GPL v2
 Group:		Daemons
 Source0:	https://security.appspot.com/downloads/%{name}-%{version}.tar.gz
@@ -152,6 +152,12 @@ fi
 if [ "$1" = "0" ]; then
 	%service vsftpd stop
 	/sbin/chkconfig --del %{name}
+fi
+
+%triggerin standalone -- glibc
+# restart vsftpd if glibc is upgraded or downgraded
+if [ "$2" != 1 ]; then
+	%service -q vsftpd restart
 fi
 
 %files
