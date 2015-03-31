@@ -42,6 +42,8 @@ Provides:	ftpserver
 Conflicts:	man-pages < 1.51
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
+%define	specflags	-fpie -pipe -Wextra -Werror
+
 %description
 A Very Secure FTP Daemon - written from scratch - by Chris "One Man
 Security Audit Team" Evans.
