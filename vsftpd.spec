@@ -10,7 +10,7 @@ Summary(pl.UTF-8):	Bardzo Bezpieczny Demon FTP
 Summary(pt_BR.UTF-8):	vsftpd - Daemon FTP Muito Seguro
 Name:		vsftpd
 Version:	3.0.2
-Release:	3
+Release:	4
 License:	GPL v2
 Group:		Daemons
 Source0:	https://security.appspot.com/downloads/%{name}-%{version}.tar.gz
@@ -107,6 +107,7 @@ Ten pakiet pozwala na wystartowanie vsftpd jako samodzielnego demona.
 %{__make} \
 	CC="%{__cc}" \
 	CFLAGS="%{rpmcflags}" \
+	LIBS="-lwrap -lnsl -lpam -lcap -ldl -lcrypto -lssl" \
 	LINK="%{rpmldflags}"
 
 %install
