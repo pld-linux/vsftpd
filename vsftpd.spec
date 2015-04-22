@@ -107,7 +107,7 @@ Ten pakiet pozwala na wystartowanie vsftpd jako samodzielnego demona.
 %{__make} \
 	CC="%{__cc}" \
 	CFLAGS="%{rpmcflags}" \
-	LIBS="-lwrap -lnsl -lpam -lcap -ldl -lcrypto -lssl" \
+	LIBS="-lwrap -lpam -lcap -lssl -lcrypto" \
 	LINK="%{rpmldflags}"
 
 %install
