@@ -1,0 +1,28 @@
+diff -ruN vsftpd-3.0.3.orig/sysstr.c vsftpd-3.0.3/sysstr.c
+--- vsftpd-3.0.3.orig/sysstr.c	2020-11-17 09:47:03.872923383 +0100
++++ vsftpd-3.0.3/sysstr.c	2020-11-17 09:48:41.219754145 +0100
+@@ -74,19 +74,11 @@
+ int
+ str_open(const struct mystr* p_str, const enum EVSFSysStrOpenMode mode)
+ {
+-  enum EVSFSysUtilOpenMode open_mode = kVSFSysUtilOpenUnknown;
+-  switch (mode)
+-  {
+-    case kVSFSysStrOpenReadOnly:
+-      open_mode = kVSFSysUtilOpenReadOnly;
+-      break;
+-    case kVSFSysStrOpenUnknown:
+-      /* Fall through */
+-    default:
+-      bug("unknown mode value in str_open");
+-      break;
+-  }
+-  return vsf_sysutil_open_file(str_getbuf(p_str), open_mode);
++  if (mode == kVSFSysStrOpenReadOnly)
++    return vsf_sysutil_open_file(str_getbuf(p_str), kVSFSysUtilOpenReadOnly);
++
++  bug("unknown mode value in str_open");
++  return -1;
+ }
+ 
+ int
